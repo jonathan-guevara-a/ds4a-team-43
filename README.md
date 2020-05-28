@@ -1,0 +1,16 @@
+# DS4A Colombia - 2020
+## Team 43 - Practicum
+
+### Members
+
+- Daniel Gaitan Forero
+- Fabio Andrés Sánchez Bernal
+- Jhon Alexander Parra Jiménez
+- Jonathan Guevara Agudelo
+- Luz Elena Thompson Pinzón
+- Maria Camila Manrique Nuñez
+
+### Teaching team
+
+- Chris Earle
+- Daniel Gil
