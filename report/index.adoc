@@ -1,0 +1,30 @@
+= DS4A Colombia 2020 - <Project Title>
+:last-update-label!:
+:doctype: book
+:toc:
+
+== Team
+
+=== Members (Team 43)
+
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+
+=== Teachers
+
+* Chris Earle
+* Daniel Gil
+
+include::problem/index.adoc[]
+
+include::plan/index.adoc[]
+
+include::users/index.adoc[]
+
+include::app/index.adoc[]
+
+include::datasets/index.adoc[]
