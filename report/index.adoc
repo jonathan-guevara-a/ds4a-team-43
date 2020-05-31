@@ -1,6 +1,7 @@
 = DS4A Colombia 2020 - <Project Title>
-:last-update-label!:
 :doctype: book
+:sectnums:
+:last-update-label!:
 :toc:
 
 == Team
