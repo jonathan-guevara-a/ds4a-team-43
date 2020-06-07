@@ -1,0 +1,27 @@
+*Fecha:* YYYY-MM-DD
+
+*Hora:* HH:MM
+
+== Participantes
+
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+
+== Agenda
+
+. Ítem 1.
+. Ítem 2.
+. Pasos Siguientes.
+
+== Ítem 1
+
+== Ítem 2
+
+== Pasos Siguientes
+
+. Ítem 1.
+. Ítem 2.

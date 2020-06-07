@@ -1,0 +1,33 @@
+*Fecha:* 2020-06-06
+
+*Hora:* 13:30
+
+== Participantes
+
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+
+== Agenda
+
+. Discutir las observaciones y preguntas a tratar en la reunión con el TA.
+. Crear el documento de Descripción del Proyecto que debe ser enviado a *DS4A*.
+. Pasos siguientes.
+
+== Ítem 1
+
+No se identifican preguntas puntuales, por lo que se decide describirle al TA la problemática actual del proyecto y que nos de recomendaciones frente al alcance y la descripción que debe ser entregada.
+
+== Ítem 2
+
+Se realiza la creación del documento de la descripción del proyecto siguiendo la estructura e indicaciones provistas por *DS4A*.
+
+Se realiza la traducción del documento y es cargado a la plataforma.
+
+== Pasos siguientes
+
+. Comenzar a trabajar en la primera entrega del reporte del Practicum.
+. Comenzar a analizar los datos disponibles para el proyecto.

@@ -1,0 +1,65 @@
+*Fecha:* 2020-05-31
+
+*Hora:* 13:30
+*Hora:* 18:00
+
+== Participantes
+
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+* John Oliver Coffey (Chispa)
+
+== Agenda
+
+    . Discutir las observaciones y preguntas a tratar en la reunión con el TA.
+    . Realizar reunión con el representante del proyecto [*Chispa*](https://chis.pa) y conocer otras propuestas disponibles.
+    . Pasos siguientes.
+
+== Ítem 1
+
+Se identificaron las siguientes preguntas:
+
+. ¿Cuándo es la fecha de entrega de la descripción inicial del proyecto?
+. ¿Es posible modificar posteriormente el alcance del proyecto después de haber realizar un análisis más detallado de los datos disponibles?
+. ¿Debemos entregar el documento de alcance commpleto (igual a la plantilla compartida) la próxima semana?
+
+De igual forma, se identificaron de forma general los siguientes componentes generales de la propuesta de *Chispa*:
+
+* Problemas:
+    * Predicción de zonas propensas a homicios.
+    * Predicción de horas/días de la semana propensas a homicidios.
+    * Perfilamiento de la víctima.
+    * Análisis de temporadas del año vs homicios.
+    * Factores que impacten en mayor proporción la ocurrencia de homicidios.
+* Impacto Social:
+    * Llegar a las autoridades para establecer políticas o estrategias para disminuir estos eventos.
+* Necesidad:
+    * Conseguir información sobre victimarios de homicidios judicializados.
+
+Antes de la reunion con el TA, *Alcaldía de Copacabana* envió una respuesta solicitando un número de teléfono para programar una reunión el día lunes 08 de junio.
+Debido a la limitante de tiempo del programa, se envió respuesta a la entidad para intentar programar una reunión el mismo día, antes de tomar una decisión definitiva.
+
+== Ítem 2
+
+Se realizó la reunión con uno de los socios de *Chispa* para conocer un poco más sobre el proyecto y qué otras problemáticas tenían identificadas. Nos relato algunas alternativas y algunos estudios realizados en USA que nos podrían servir cómo guía:
+
+* https://www.journals.uchicago.edu/doi/10.1086/519807
+* https://link.springer.com/article/10.1007/s11948-018-00081-0
+* https://emerj.com/ai-sector-overviews/ai-crime-prevention-5-current-applications/
+* https://www.chicagotribune.com/columns/clarence-page/ct-chicago-murders-gun-violence-gary-slutkin-ceasefire-perspec-0101-jm-20161230-story.html
+* https://towardsdatascience.com/homicide-in-chicago-data-storytelling-part-one-e6fbd77afc07
+* https://towardsdatascience.com/homicide-in-chicago-data-stroytelling-part-two-e8748602daca
+* https://www.scientificamerican.com/article/big-data-are-reducing-homicides-in-cities-across-the-americas/
+
+Teniendo en cuenta que no se obtuvo otra respuesta de parte de *Alcaldía de Copacabana*, se toma la decisión de continuar con la propuesta de *Chispa*.
+
+Cada integrante deberá buscar literatura disponible respecto a la problemática para identificar cómo abordar el proyecto, buscando una perspectiva diferenciadora de lo que ya se ha hecho.
+De igual forma, se buscarán qué otros datos abiertos existen que puedan ser complementarios.
+
+== Pasos siguientes
+
+. Hacer un nueva reunión el 2020-06-06 para crear el documento de Descripción del Proyecto que debe ser enviado a *DS4A*.
