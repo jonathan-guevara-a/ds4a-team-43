@@ -1,0 +1,38 @@
+*Fecha:* 2020-06-12
+
+*Hora:* 13:30
+
+== Participantes
+
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+
+== Agenda
+
+. Revisar los temas a validar en la reunión con los TA.
+. Revisar la información necesaria para la entrega del documento de Project Scope.
+. Pasos Siguientes.
+
+== Ítem 1
+
+No se identifican preguntas puntuales, por lo que se decide solicitar recomendaciones al TA para la creación del documento del Project Scope y validar si hay alguna retroalimentación respecto al primer documento entregado.
+
+== Ítem 2
+
+Se discuten las secciones del nuevo documento a entregar y se distibuyen para su ejecución:
+
+* Data
+* Métodos
+* Interfaz
+* Hitos
+* Cronograma
+* Riesgos
+
+== Pasos Siguientes
+
+. Completar el documento de Project Scope.
+. Comenzar a analizar los datos disponibles para el proyecto.
