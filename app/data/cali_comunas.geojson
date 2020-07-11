@@ -8,7 +8,7 @@
     "features": [
         {
             "type": "Feature",
-            "id": "6",
+            "id": "06",
             "properties": {
                 "id_comuna": "mc_comunas.330",
                 "comuna": "Comuna 6",
@@ -22,7 +22,7 @@
         },
         {
             "type": "Feature",
-            "id": "4",
+            "id": "04",
             "properties": {
                 "id_comuna": "mc_comunas.331",
                 "comuna": "Comuna 4",
@@ -36,7 +36,7 @@
         },
         {
             "type": "Feature",
-            "id": "5",
+            "id": "05",
             "properties": {
                 "id_comuna": "mc_comunas.332",
                 "comuna": "Comuna 5",
@@ -50,7 +50,7 @@
         },
         {
             "type": "Feature",
-            "id": "7",
+            "id": "07",
             "properties": {
                 "id_comuna": "mc_comunas.333",
                 "comuna": "Comuna 7",
@@ -64,7 +64,7 @@
         },
         {
             "type": "Feature",
-            "id": "8",
+            "id": "08",
             "properties": {
                 "id_comuna": "mc_comunas.334",
                 "comuna": "Comuna 8",
@@ -78,7 +78,7 @@
         },
         {
             "type": "Feature",
-            "id": "9",
+            "id": "09",
             "properties": {
                 "id_comuna": "mc_comunas.335",
                 "comuna": "Comuna 9",
@@ -120,7 +120,7 @@
         },
         {
             "type": "Feature",
-            "id": "1",
+            "id": "01",
             "properties": {
                 "id_comuna": "mc_comunas.349",
                 "comuna": "Comuna 1",
@@ -134,7 +134,7 @@
         },
         {
             "type": "Feature",
-            "id": "3",
+            "id": "03",
             "properties": {
                 "id_comuna": "mc_comunas.350",
                 "comuna": "Comuna 3",
@@ -288,7 +288,7 @@
         },
         {
             "type": "Feature",
-            "id": "2",
+            "id": "02",
             "properties": {
                 "id_comuna": "mc_comunas.348",
                 "comuna": "Comuna 2",
