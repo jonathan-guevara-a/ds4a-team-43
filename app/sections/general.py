@@ -96,7 +96,6 @@ layout = html.Div([
                         max = year_max,
                         value = [year_min, year_max],
                         step = 1,
-                        pushable = 1,
                         marks = {
                             i : {
                                 "label": f"{i}",
@@ -120,7 +119,6 @@ layout = html.Div([
                                 "label": f"{calendar.month_abbr[i]}",
                                 "style": {"transform": "rotate(45deg)"}
                             } for i in range(1, 13)
-
                         }
                     ),
                     html.Br(),

@@ -1,0 +1,18 @@
+= DS4A Colombia - 2020
+
+== Team 43 - Practicum
+
+Before running the application, please create a file named **secure/database.txt** with the following structure:
+
+. host
+. database name
+. database user
+. database password
+
+The first 4 lines of the file should contain the previous information, without any label or parameter name, since
+these values will be used as follows:
+
+[source, python]
+----
+postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}
+----
