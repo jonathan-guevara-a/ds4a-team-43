@@ -10,66 +10,189 @@ from dash.dependencies import Input, Output
 from sqlalchemy import create_engine, text
 from application import app
 
+# Read database parameters.
 file = open("secure/database.txt", "r")
 lines = file.readlines()
-DB_USERNAME = lines[0].rstrip()
-DB_PASSWORD = lines[1].rstrip()
+DB_HOST = lines[0].rstrip()
+DB_NAME = lines[1].rstrip()
+DB_USERNAME = lines[2].rstrip()
+DB_PASSWORD = lines[3].rstrip()
 file.close()
 
+# Define base color scale for all graphs.
+color_scale = [
+    "#a6cee3",
+    "#1f78b4",
+    "#b2df8a",
+    "#33a02c",
+    "#fb9a99",
+    "#e31a1c",
+    "#fdbf6f",
+    "#ff7f00",
+    "#cab2d6",
+    "#6a3d9a",
+    "#ffff99",
+    "#b15928"
+]
+
+# Read geojson files to be used in choropleth maps.
 with open('data/cali_barrios.geojson', encoding = "utf-8") as geo:
-    geojson = json.loads(geo.read())
+    borough_geojson = json.loads(geo.read())
 
-engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@database-ds4a.chsrwcmrt1zt.us-east-2.rds.amazonaws.com/postgres", max_overflow = 20)
+with open('data/cali_comunas.geojson', encoding = "utf-8") as geo:
+    commune_geojson = json.loads(geo.read())
 
+# Create database connection.
+engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}", max_overflow = 20)
+
+# Retrieve summarized information to display.
 query = """
-    SELECT      FECHAHORA,
-                ACTIVIDAD.ID_BARRIO,
-                BARRIO.BARRIO,
-                BARRIO.COMUNA AS COMUNA,
-                BARRIO.ESTRA_MODA,
-                BARRIO.ZONA,
-                BARRIO.AREA,
-                TIPO_CRIMEN,
-                CANTIDAD
-    FROM        TARGETING.FCT_ACT_CRIMINAL AS ACTIVIDAD
-                LEFT JOIN
-                TARGETING.DIM_BARRIOS AS BARRIO
-                    ON BARRIO.ID_BARRIO = ACTIVIDAD.ID_BARRIO
-    WHERE       ACTIVIDAD.ID_BARRIO IS NOT NULL
+    SELECT      YEAR,
+                CRIME_TYPE,
+                BOROUGH_ID,
+                BOROUGH_NAME,
+                BOROUGH_COMMUNE,
+                BOROUGH_STRATUM,
+                BOROUGH_ZONE,
+                TOTAL
+    FROM        TARGETING.VW_CRIMES_YEAR
 """
-
 base_df = pd.read_sql_query(query, con = engine)
 
-year_min = base_df["fechahora"].dt.year.min()
-year_max = base_df["fechahora"].dt.year.max()
-zone_list = sorted(base_df["zona"].unique())
-commune_list = sorted(base_df["comuna"].unique())
-borough_list = sorted(base_df["barrio"].unique())
-crime_list = sorted(base_df["tipo_crimen"].unique())
+# Get the dataframe by year.
+grouped_year_df = base_df[["year", "total"]].groupby(["year"]).sum().reset_index()
+# Get the dataframe by year and crime_type.
+grouped_year_crime_df = base_df[["year", "crime_type", "total"]].groupby(["year", "crime_type"]).sum().reset_index()
 
-grouped_year_df = base_df[["fechahora", "cantidad"]]\
-.groupby([base_df["fechahora"].dt.year]).sum().reset_index().rename(columns = {"fechahora": "anio"})
+# Get from the dataframe the extreme values to be used for the graphs.
+year_min = grouped_year_df["year"].min()
+year_max = grouped_year_df["year"].max()
+total_min = grouped_year_df["total"].min()
+total_max = grouped_year_df["total"].max()
 
-grouped_year_crime_df = base_df[["fechahora", "tipo_crimen", "cantidad"]]\
-.groupby([base_df["fechahora"].dt.year, "tipo_crimen"]).sum().reset_index().rename(columns = {"fechahora": "anio"})
-
-year_line_figure = px.line(
-    grouped_year_df,
-    x = "anio",
-    y = "cantidad",
-    height = 700,
-    color_discrete_sequence = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"]
+# Create the line graph with the total per year.
+year_line_figure = go.Figure(
+    go.Scatter(
+        x = grouped_year_df["year"],
+        y = grouped_year_df["total"]
+    ),
+    layout = go.Layout(
+        xaxis = {
+            "range": [year_min - 1, year_max + 1],
+            "autorange": False
+        },
+        yaxis = {
+            "range": [0, total_max + 10000],
+            "autorange": False
+        },
+        # Define the button that will trigger the graph animation.
+        updatemenus = [
+            {
+                "type": "buttons",
+                "buttons": [
+                    {
+                        "label": "Play",
+                        "method": "animate",
+                        "args": [None]
+                    }
+                ],
+                "x": 0.57,
+                "y": -0.1
+            }
+        ]
+    ),
+    # Define the frames for each year step.
+    frames = [
+        go.Frame(
+            data = [
+                go.Scatter(
+                    x = grouped_year_df[grouped_year_df["year"] <= year]["year"],
+                    y = grouped_year_df[grouped_year_df["year"] <= year]["total"]
+                )
+            ]
+        )
+        for year in range(year_min, year_max + 1)
+    ]
 )
 
-year_crime_line_figure = px.line(
-    grouped_year_crime_df[~grouped_year_crime_df["tipo_crimen"].isin(["HURTO PERSONAS", "LESION PERSONAL"])],
-    x = "anio",
-    y = "cantidad",
-    color = "tipo_crimen",
-    height = 700,
-    color_discrete_sequence = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"]
+# Get from the dataframe the extreme values to be used for the graphs.
+year_min = grouped_year_crime_df["year"].min()
+year_max = grouped_year_crime_df["year"].max()
+count_min = grouped_year_crime_df["total"].min()
+count_max = grouped_year_crime_df["total"].max()
+
+# Define the list that will containg the frames for the graph by crime_type.
+base_data = []
+frames_data = []
+
+# Create a trace (frame) for each crime_type through the years.
+for crime_type in grouped_year_crime_df["crime_type"].unique():
+    crime_type_df = grouped_year_crime_df[grouped_year_crime_df["crime_type"] == crime_type]
+
+    base_data.append(
+        go.Scatter(
+            x = crime_type_df["year"],
+            y = crime_type_df["total"],
+            name = crime_type
+        )
+    )
+
+# Create a trace (frame) for each crime_type for each year step.
+for year in range(year_min, year_max + 1):
+    frame_year_data = []
+
+    for crime_type in grouped_year_crime_df["crime_type"].unique():
+        crime_type_df = grouped_year_crime_df[
+            (grouped_year_crime_df["crime_type"] == crime_type) &
+            (grouped_year_crime_df["year"] <= year)
+        ]
+
+        frame_year_data.append(
+            go.Scatter(
+                x = crime_type_df["year"],
+                y = crime_type_df["total"],
+                name = crime_type
+            )
+        )
+
+    frames_data.append(
+        go.Frame (
+            data = frame_year_data
+        )
+    )
+
+# Create the line graph with the total per crime_type per year.
+year_crime_line_figure = go.Figure(
+    data = base_data,
+    layout = go.Layout(
+        xaxis = {
+            "range": [year_min - 1, year_max + 1],
+            "autorange": False
+        },
+        yaxis = {
+            "range": [- (count_max * 0.1), count_max + 10000],
+            "autorange": False
+        },
+        updatemenus = [
+            {
+                "type": "buttons",
+                "buttons": [
+                    {
+                        "label": "Play",
+                        "method": "animate",
+                        "args": [None]
+                    }
+                ],
+                "x": 0.57,
+                "y": -0.1
+            }
+        ],
+        colorway = color_scale
+    ),
+    frames = frames_data
 )
 
+# Define base layout using Bootstrap grid system.
 layout = html.Div([
     dbc.Row(
         [

@@ -10,48 +10,65 @@ from dash.dependencies import Input, Output
 from sqlalchemy import create_engine, text
 from application import app
 
+# Read database parameters.
 file = open("secure/database.txt", "r")
 lines = file.readlines()
-DB_USERNAME = lines[0].rstrip()
-DB_PASSWORD = lines[1].rstrip()
+DB_HOST = lines[0].rstrip()
+DB_NAME = lines[1].rstrip()
+DB_USERNAME = lines[2].rstrip()
+DB_PASSWORD = lines[3].rstrip()
 file.close()
 
+# Define base color scale for all graphs.
+color_scale = [
+    "#a6cee3",
+    "#1f78b4",
+    "#b2df8a",
+    "#33a02c",
+    "#fb9a99",
+    "#e31a1c",
+    "#fdbf6f",
+    "#ff7f00",
+    "#cab2d6",
+    "#6a3d9a",
+    "#ffff99",
+    "#b15928"
+]
+
+# Read geojson files to be used in choropleth maps.
 with open('data/cali_barrios.geojson', encoding = "utf-8") as geo:
     borough_geojson = json.loads(geo.read())
 
 with open('data/cali_comunas.geojson', encoding = "utf-8") as geo:
     commune_geojson = json.loads(geo.read())
 
-engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@database-ds4a.chsrwcmrt1zt.us-east-2.rds.amazonaws.com/postgres", max_overflow = 20)
+# Create database connection.
+engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}", max_overflow = 20)
 
+# Retrieve summarized information to display.
 query = """
-    SELECT      FECHAHORA,
-                ACTIVIDAD.ID_BARRIO,
-                BARRIO.BARRIO,
-                BARRIO.COMUNA AS COMUNA,
-                BARRIO.ESTRA_MODA,
-                BARRIO.ZONA,
-                BARRIO.AREA,
-                TIPO_CRIMEN,
-                CANTIDAD
-    FROM        TARGETING.FCT_ACT_CRIMINAL AS ACTIVIDAD
-                LEFT JOIN
-                TARGETING.DIM_BARRIOS AS BARRIO
-                    ON BARRIO.ID_BARRIO = ACTIVIDAD.ID_BARRIO
-    WHERE       ACTIVIDAD.ID_BARRIO IS NOT NULL
+    SELECT      YEAR,
+                MONTH,
+                CRIME_TYPE,
+                BOROUGH_ID,
+                BOROUGH_NAME,
+                BOROUGH_COMMUNE,
+                BOROUGH_STRATUM,
+                BOROUGH_ZONE,
+                TOTAL
+    FROM        TARGETING.VW_CRIMES_YEAR_MONTH
 """
-
 base_df = pd.read_sql_query(query, con = engine)
-base_df["year"] = base_df["fechahora"].dt.year
-base_df["month"] = base_df["fechahora"].dt.month
 
+# Get from the dataframe the unique values from some columns that are going to be used as filters.
 year_min = base_df["year"].min()
 year_max = base_df["year"].max()
-zone_list = sorted(base_df["zona"].unique())
-commune_list = sorted(base_df["comuna"].unique())
-borough_list = sorted(base_df["barrio"].unique())
-crime_list = sorted(base_df["tipo_crimen"].unique())
+zone_list = sorted(base_df["borough_zone"].unique())
+commune_list = sorted(base_df["borough_commune"].unique())
+borough_list = sorted(base_df["borough_name"].unique())
+crime_list = sorted(base_df["crime_type"].unique())
 
+# Create an empty map to be displayed at start up.
 map_figure = go.Figure(
     go.Choroplethmapbox()
 )
@@ -63,6 +80,7 @@ map_figure.update_layout(
     height = 700
 )
 
+# Define base layout using Bootstrap grid system.
 layout = html.Div([
     dbc.Row(
         [
@@ -78,8 +96,12 @@ layout = html.Div([
                         max = year_max,
                         value = [year_min, year_max],
                         step = 1,
+                        pushable = 1,
                         marks = {
-                            i : f"{i}" for i in range(year_min, (year_max + 1))
+                            i : {
+                                "label": f"{i}",
+                                "style": {"transform": "rotate(45deg)"}
+                            } for i in range(year_min, (year_max + 1))
                         }
                     ),
                     html.Br(),
@@ -94,7 +116,11 @@ layout = html.Div([
                         value = [1, 12],
                         step = 1,
                         marks = {
-                            i : f"{calendar.month_abbr[i]}" for i in range(1, 13)
+                            i : {
+                                "label": f"{calendar.month_abbr[i]}",
+                                "style": {"transform": "rotate(45deg)"}
+                            } for i in range(1, 13)
+
                         }
                     ),
                     html.Br(),
@@ -140,7 +166,7 @@ layout = html.Div([
                     html.Label("Crime:"),
                     html.Br(),
                     dcc.Dropdown(
-                        id = "crime-dropdown",
+                        id = "crime-type-dropdown",
                         options = [
                             {"label": f"{i.title()}", "value": i} for i in crime_list
                         ],
@@ -200,6 +226,7 @@ layout = html.Div([
     )
 ])
 
+# Define callback to update all graphs according to the user's filter selections.
 @app.callback(
     [
         Output('map-graph', 'figure'),
@@ -213,54 +240,72 @@ layout = html.Div([
         Input('zone-dropdown', 'value'),
         Input('commune-dropdown', 'value'),
         Input('borough-dropdown', 'value'),
-        Input('crime-dropdown', 'value'),
+        Input('crime-type-dropdown', 'value'),
         Input('corregimientos-check', 'value')
     ]
 )
 def update_map(year, month, zone, commune, borough, crime, corregimientos):
+    # Filter the base dataframe using the selected filters, if they have values.
+    # Each filter is cumulative and has a hierarchy.
     filtered_df = base_df.copy()
 
     if (len(corregimientos) == 0):
-        filtered_df = filtered_df[filtered_df["zona"] != "Corregimiento"]
+        filtered_df = filtered_df[filtered_df["borough_zone"] != "Corregimiento"]
 
     if (year):
-        filtered_df = filtered_df[(filtered_df["year"] >= year[0]) & (filtered_df["year"] <= year[1])]
+        filtered_df = filtered_df[
+            (filtered_df["year"] >= year[0]) &
+            (filtered_df["year"] <= year[1])
+        ]
 
     if (month):
-        filtered_df = filtered_df[(filtered_df["month"] >= month[0]) & (filtered_df["month"] <= month[1])]
+        filtered_df = filtered_df[
+            (filtered_df["month"] >= month[0]) &
+            (filtered_df["month"] <= month[1])
+        ]
 
     if (zone):
-        filtered_df = filtered_df[filtered_df["zona"].isin(zone)]
+        filtered_df = filtered_df[filtered_df["borough_zone"].isin(zone)]
 
     if (commune):
-        filtered_df = filtered_df[filtered_df["comuna"].isin(commune)]
+        filtered_df = filtered_df[filtered_df["borough_commune"].isin(commune)]
 
     if (borough):
-        filtered_df = filtered_df[filtered_df["barrio"].isin(borough)]
+        filtered_df = filtered_df[filtered_df["borough_name"].isin(borough)]
 
     if (crime):
-        filtered_df = filtered_df[filtered_df["tipo_crimen"].isin(crime)]
+        filtered_df = filtered_df[filtered_df["crime_type"].isin(crime)]
 
-    top_df = filtered_df[["barrio", "cantidad"]].groupby("barrio").sum().sort_values(by = "cantidad", ascending = False).reset_index().head(20)
-    filtered_crime_df = filtered_df[filtered_df["barrio"].isin(top_df["barrio"])].groupby(["barrio", "tipo_crimen"]).sum().reset_index()
-    filtered_crime_commune_df = filtered_df.groupby (["comuna", "tipo_crimen"]).sum().reset_index()
-    filtered_borough_df = filtered_df.groupby(["id_barrio", "barrio", "comuna", "zona", "estra_moda", "area"]).sum().reset_index()
-    filtered_commune_df = filtered_df.groupby(["comuna", "zona", "estra_moda", "area"]).sum().reset_index()
-    filtered_borough_df["text"] = "Borough: " + filtered_borough_df["barrio"] + \
-        "<br />Commune: " + filtered_borough_df["comuna"].astype(str) + \
-        "<br />Zone: " + filtered_borough_df["zona"] + \
-        "<br />Socioeconomical Level: " + filtered_borough_df["estra_moda"].astype(str) + \
-        "<br />Area: " + filtered_borough_df["area"].astype(str)
-    filtered_commune_df["text"] = "Commune: " + filtered_borough_df["comuna"].astype(str) + \
-        "<br />Zone: " + filtered_borough_df["zona"] + \
-        "<br />Socioeconomical Level: " + filtered_borough_df["estra_moda"].astype(str) + \
-        "<br />Area: " + filtered_borough_df["area"].astype(str)
+    # Get the boroughs with the most crimes.
+    top_df = filtered_df[["borough_name", "total"]].groupby("borough_name").sum()\
+        .sort_values(by = "total", ascending = False).reset_index().head(20)
+    # Group the filtered df by borough_name and crime_type. This is used for the bar graph.
+    filtered_crime_df = filtered_df[filtered_df["borough_name"].isin(top_df["borough_name"])]\
+        .groupby(["borough_name", "crime_type"]).sum().reset_index()
+    # Group the filtered df by borough_commune and crime_type (This is temporary). This is used for the bar graph.
+    filtered_crime_commune_df = filtered_df.groupby (["borough_commune", "crime_type"]).sum().reset_index()
+    # Group the filtered df by borough. This is used for the choropleth map.
+    filtered_borough_df = filtered_df.groupby(
+        ["borough_id", "borough_name", "borough_commune", "borough_zone", "borough_stratum"]
+    ).sum().reset_index()
+    # Group the filtered  df by borough_commune. This is used for the choropleth map.
+    filtered_commune_df = filtered_df.groupby(["borough_commune", "borough_zone", "borough_stratum"]).sum().reset_index()
+    # Define the borough data that will be displayed on the choropleth map when the user hovers on each polygon.
+    filtered_borough_df["text"] = "Borough: " + filtered_borough_df["borough_name"] + \
+        "<br />Commune: " + filtered_borough_df["borough_commune"].astype(str) + \
+        "<br />Zone: " + filtered_borough_df["borough_zone"] + \
+        "<br />Socioeconomical Level: " + filtered_borough_df["borough_stratum"].astype(str)
+    # Define the commune data that will be displayed on the choropleth map when the user hovers on each polygon.
+    filtered_commune_df["text"] = "Commune: " + filtered_borough_df["borough_commune"].astype(str) + \
+        "<br />Zone: " + filtered_borough_df["borough_zone"] + \
+        "<br />Socioeconomical Level: " + filtered_borough_df["borough_stratum"].astype(str)
 
+    # Update the map with the new data.
     map_figure_1 = go.Figure(
         go.Choroplethmapbox(
             geojson = borough_geojson,
-            locations = filtered_borough_df["id_barrio"],
-            z = filtered_borough_df["cantidad"],
+            locations = filtered_borough_df["borough_id"],
+            z = filtered_borough_df["total"],
             colorscale = "Viridis",
             marker_opacity = 0.5,
             marker_line_width=0.5,
@@ -276,11 +321,12 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         title_text = 'Total Crimes per Borough'
     )
 
+    # Update the map with the new data.
     map_figure_2 = go.Figure(
         go.Choroplethmapbox(
             geojson = commune_geojson,
-            locations = filtered_borough_df["comuna"],
-            z = filtered_borough_df["cantidad"],
+            locations = filtered_borough_df["borough_commune"],
+            z = filtered_borough_df["total"],
             colorscale = "Viridis",
             marker_opacity = 0.5,
             marker_line_width=0.5,
@@ -296,36 +342,42 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         title_text = 'Total Crimes per Commune',
     )
 
+    # Update the bar graph with the new data.
     bar_figure_1 = px.bar(
         filtered_crime_df,
-        x = "barrio",
-        y = "cantidad",
-        color = "tipo_crimen",
+        x = "borough_name",
+        y = "total",
+        color = "crime_type",
         height = 700,
         title = "Crimes per Borough",
         labels = {
-            "barrio": "Borough",
-            "cantidad": "Total",
-            "tipo_crimen": "Type of crime"
+            "borough_name": "Borough",
+            "total": "Total",
+            "crime_type": "Type of crime"
         },
-        color_discrete_sequence = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"]
+        color_discrete_sequence = color_scale
     ).update_xaxes(categoryorder = "total descending")
 
-    filtered_crime_commune_df["label_comuna"] = filtered_crime_commune_df["comuna"].apply(lambda x: "Commune " + x)
+    # Create a new columns with a longer name for the commune.
+    filtered_crime_commune_df["commune_name"] = filtered_crime_commune_df["borough_commune"].apply(
+        lambda x: "Commune " + x
+    )
 
+    # Update the bar graph with the new data.
     bar_figure_2 = px.bar(
         filtered_crime_commune_df,
-        x = "label_comuna",
-        y = "cantidad",
-        color = "tipo_crimen",
+        x = "commune_name",
+        y = "total",
+        color = "crime_type",
         height = 700,
         title = "Crimes per Commune",
         labels = {
-            "label_comuna": "Commune",
-            "cantidad": "Total",
-            "tipo_crimen": "Type of crime"
+            "commune_name": "Commune",
+            "total": "Total",
+            "crime_type": "Type of crime"
         },
-        color_discrete_sequence = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"]
-    ).update_xaxes(type = "category", categoryorder = "total descending")\
+        color_discrete_sequence = color_scale
+    ).update_xaxes(type = "category", categoryorder = "total descending")
 
+    # Return the figures to update.
     return [map_figure_1, bar_figure_1, map_figure_2, bar_figure_2]
