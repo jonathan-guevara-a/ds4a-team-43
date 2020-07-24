@@ -5,47 +5,74 @@ from application import app
 from dash.dependencies import Input, Output
 from sections import header, general, criminal_activity, citizens_perception, about_us, future_work
 
-layout = html.Div([
-    dbc.Row(
-        [
-            dbc.Col(
-                html.Div([
-                    html.Img(src = "assets/ds4a_colombia.svg")
-                ]),
-                lg = 3,
-                md = 4,
-                sm = 12
-            ),
-            dbc.Col(
-                html.Div(
-                    [
-                        html.H2("Team 43 - Criminal Activity vs Citizens Security Perception in Santiago de Cali"),
+# Define base layout using Bootstrap grid system.
+layout = html.Div(
+    children = [
+        dbc.Row(
+            children = [
+                dbc.Col(
+                    children = [
+                        html.Div(
+                            children = [
+                                html.Img(src = "assets/ds4a_colombia.svg")
+                            ]
+                        )
                     ],
-                    className = "text-center"
+                    lg = {"size": 3, "offset": 1},
+                    md = {"size": 4, "offset": 1},
+                    sm = {"size": 12, "offset": 1}
+                ),
+                dbc.Col(
+                    children = [
+                        html.Div(
+                            children = [
+                                html.H1(
+                                    children = [
+                                        "Criminal Activity vs Citizens Security",
+                                        html.Br(),
+                                        "Perception in Santiago de Cali"
+                                    ]
+                                ),
+                            ],
+                            className = "text-center"
+                        )
+                    ]
+                ),
+                dbc.Col(
+                    children = [],
+                    width = {"size": 1}
                 )
-            ),
-        ],
-        className = "mx-0 p-3 d-flex flex-wrap align-items-center"
-    ),
-    dbc.Row(
-        [
-            dbc.Col(
-                dbc.Tabs(
-                    [
-                        dbc.Tab(label = "General", tab_id = "general-tab"),
-                        dbc.Tab(label = "Criminal Activity", tab_id = "criminal-activity-tab"),
-                        dbc.Tab(label = "Citizens Perception", tab_id = "citizens-perception-tab"),
-                        dbc.Tab(label = "About Us", tab_id = "about-us-tab"),
-                        dbc.Tab(label = "Future Work", tab_id = "future-work-tab")
-                    ],
-                    id = "navigation-tabs",
-                    active_tab = "general-tab"
+            ],
+            className = "mx-0 p-10 d-flex flex-wrap align-items-center main-header cali-background primary-color",
+
+        ),
+        dbc.Row(
+            children = [
+                dbc.Col(
+                    children = [
+                        dbc.Tabs(
+                            children = [
+                                dbc.Tab(
+                                    label = "General", tab_id = "general-tab"),
+                                dbc.Tab(
+                                    label = "Criminal Activity", tab_id = "criminal-activity-tab"),
+                                dbc.Tab(
+                                    label = "Citizens Perception", tab_id = "citizens-perception-tab"),
+                                dbc.Tab(
+                                    label = "About Us", tab_id = "about-us-tab"),
+                                dbc.Tab(
+                                    label = "Future Work", tab_id = "future-work-tab")
+                            ],
+                            id = "navigation-tabs",
+                            active_tab = "criminal-activity-tab"
+                        )
+                    ]
                 )
-            )
-        ],
-        className = "mx-0 p-3"
-    )
-])
+            ],
+            className = "mx-0 secondary-color"
+        )
+    ]
+)
 
 @app.callback(
     Output("content", "children"),

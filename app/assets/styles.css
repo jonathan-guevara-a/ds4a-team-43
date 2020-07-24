@@ -1,0 +1,33 @@
+.cali-background {
+    background-image: url("header_left.svg"), url("header_right.svg");
+    background-repeat: no-repeat;
+    background-size: 9rem auto, 8rem auto;
+    background-position: 0 100%, 100% 0;
+}
+
+.main-header {
+    height: 10rem;
+}
+
+.profile-picture {
+    width: 80%;
+    border: 0.1rem solid grey;
+    border-radius: 50%;
+}
+
+.primary-color {
+    background-color: #fef3f0;
+}
+
+.secondary-color {
+    background-color: #f8f8f8;
+}
+
+.nav-item, .nav-link {
+    cursor: pointer;
+}
+
+.active.nav-link {
+    background-color: #ffac74 !important;
+    color: #000000 !important;
+}

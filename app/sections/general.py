@@ -42,6 +42,10 @@ with open('data/cali_barrios.geojson', encoding = "utf-8") as geo:
 with open('data/cali_comunas.geojson', encoding = "utf-8") as geo:
     commune_geojson = json.loads(geo.read())
 
+# Filter out the "corregimientos" in order to add a layer to the boroughs map.
+base_commune_geojson = commune_geojson.copy()
+base_commune_geojson["features"] = [feature for feature in base_commune_geojson["features"] if "mc_corregimientos" not in feature["properties"]["id_comuna"]]
+
 # Create database connection.
 engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}", max_overflow = 20)
 
@@ -70,14 +74,18 @@ crime_list = sorted(base_df["crime_type"].unique())
 
 # Create an empty map to be displayed at start up.
 map_figure = go.Figure(
-    go.Choroplethmapbox()
-)
-
-map_figure.update_layout(
-    mapbox_style = "carto-positron",
-    mapbox_zoom = 11,
-    mapbox_center = {"lat": 3.420, "lon": -76.530},
-    height = 700
+    go.Choroplethmapbox(),
+    layout = {
+        "mapbox_style": "carto-positron",
+        "mapbox_zoom": 11,
+        "mapbox_center": {"lat": 3.420, "lon": -76.530},
+        "height": 700,
+        "margin": {
+            "l": 0,
+            "r": 0,
+            "b": 0
+        }
+    }
 )
 
 # Define base layout using Bootstrap grid system.
@@ -204,22 +212,15 @@ layout = html.Div([
                                 dbc.Col(
                                     dcc.Graph(
                                         id="bar-graph"
-                                    ),
-                                    lg = 6,
-                                    sm = 12
-                                ),
-                                dbc.Col(
-                                    dcc.Graph(
-                                        id="bar-graph-2"
-                                    ),
-                                    lg = 6,
-                                    sm = 12
+                                    )
                                 )
                             ]
                         )
                     ]
                 )
-            ])
+            ],
+            lg = 9,
+            sm = 12)
         ]
     )
 ])
@@ -276,7 +277,7 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
 
     # Get the boroughs with the most crimes.
     top_df = filtered_df[["borough_name", "total"]].groupby("borough_name").sum()\
-        .sort_values(by = "total", ascending = False).reset_index().head(20)
+        .sort_values(by = "total", ascending = False).reset_index().head(50)
     # Group the filtered df by borough_name and crime_type. This is used for the bar graph.
     filtered_crime_df = filtered_df[filtered_df["borough_name"].isin(top_df["borough_name"])]\
         .groupby(["borough_name", "crime_type"]).sum().reset_index()
@@ -300,23 +301,37 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
 
     # Update the map with the new data.
     map_figure_1 = go.Figure(
-        go.Choroplethmapbox(
-            geojson = borough_geojson,
-            locations = filtered_borough_df["borough_id"],
-            z = filtered_borough_df["total"],
-            colorscale = "Viridis",
-            marker_opacity = 0.5,
-            marker_line_width=0.5,
-            marker_line_color='gray',
-            text = filtered_borough_df["text"]
-        )
-    ).update_layout(
-        mapbox_style = "carto-positron",
-        mapbox_zoom = 11,
-        mapbox_center = {"lat": 3.420, "lon": -76.530},
-        height = 700,
-        margin = dict(l = 0, r = 0, b = 0),
-        title_text = 'Total Crimes per Borough'
+        data = [
+            go.Choroplethmapbox(
+                geojson = borough_geojson,
+                locations = filtered_borough_df["borough_id"],
+                z = filtered_borough_df["total"],
+                colorscale = "Viridis",
+                marker_opacity = 0.5,
+                marker_line_width=0.5,
+                marker_line_color='gray',
+                text = filtered_borough_df["text"]
+            )
+        ],
+            layout = {
+            "mapbox_style": "carto-positron",
+            "mapbox_zoom": 11,
+            "mapbox_center": {"lat": 3.420, "lon": -76.530},
+            "mapbox_layers": [
+                {
+                    "sourcetype": "geojson",
+                    "source": base_commune_geojson,
+                    "type": "line",
+                    "maxzoom": 13
+                }
+            ],
+            "height": 700,
+            "margin": {
+                "l": 0,
+                "r": 0,
+                "b": 0
+            }
+        }
     )
 
     # Update the map with the new data.
