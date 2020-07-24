@@ -230,8 +230,7 @@ layout = html.Div([
     [
         Output('map-graph', 'figure'),
         Output('bar-graph', 'figure'),
-        Output('map-graph-2', 'figure'),
-        Output('bar-graph-2', 'figure')
+        Output('map-graph-2', 'figure')
     ],
     [
         Input('year-slider', 'value'),
@@ -393,4 +392,4 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     ).update_xaxes(type = "category", categoryorder = "total descending")
 
     # Return the figures to update.
-    return [map_figure_1, bar_figure_1, map_figure_2, bar_figure_2]
+    return [map_figure_1, bar_figure_1, map_figure_2]
