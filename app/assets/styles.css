@@ -9,6 +9,10 @@
     height: 10rem;
 }
 
+.activity-picture {
+    width: 80%;
+}
+
 .profile-picture {
     width: 80%;
     border: 0.1rem solid grey;
