@@ -59,7 +59,7 @@ query = """
     FROM        TARGETING.VW_CRIMES_YEAR_MONTH
 """
 base_df = pd.read_sql_query(query, con = engine)
-base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
+base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format='%Y%m')
 
 # Get from the dataframe the unique values from some columns that are going to be used as filters.
 year_min = base_df["year"].min()
@@ -171,33 +171,18 @@ layout = html.Div([
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    [
-                                        dcc.Graph(
-                                            id="year-line-graph"
-                                        )
-                                    ]
+                                    dcc.Graph(
+                                        id="crimes-year-line-graph"
+                                    ),
+                                    lg = 5,
+                                    sm = 12
                                 ),
-                            ]
-                        ),
-                        dbc.Row(
-                            [
                                 dbc.Col(
-                                    [
-                                        dcc.Graph(
-                                            id="year-crime-line-graph"
-                                        )
-                                    ]
-                                )
-                            ]
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    [
-                                        dcc.Graph(
-                                            id="month-bar-graph"
-                                        )
-                                    ]
+                                    dcc.Graph(
+                                        id="crimes-year-crime-type-graph"
+                                    ),
+                                    lg = 7,
+                                    sm = 12
                                 )
                             ]
                         )
@@ -214,9 +199,8 @@ layout = html.Div([
 # Define callback to update all graphs according to the user's filter selections.
 @app.callback(
     [
-        Output('year-line-graph', 'figure'),
-        Output('year-crime-line-graph', 'figure'),
-        Output('month-bar-graph', 'figure')
+        Output('crimes-year-line-graph', 'figure'),
+        Output('crimes-year-crime-type-graph', 'figure'),
     ],
     [
         Input('year-slider', 'value'),
@@ -260,16 +244,18 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     if (crime):
         filtered_df = filtered_df[filtered_df["crime_type"].isin(crime)]
 
-    # Get the dataframe grouped by year-month.
+
+    # Get the dataframe grouped by year.
     grouped_year_month_df = filtered_df[["year_month", "total"]].groupby(["year_month"]).sum().reset_index()
-    # Get the dataframe grouped by year-month and crime_type.
-    grouped_year_month_crime_df = filtered_df[["year_month", "crime_type", "total"]].groupby(["year_month", "crime_type"]).sum().reset_index()
-    # Get the dataframe by grouped by month.
-    grouped_month_df = filtered_df[["month", "total"]].groupby(["month"]).sum().reset_index()
+    # Get the dataframe grouped by year and crime_type.
+    grouped_year_crime_df = filtered_df[["year_month", "crime_type", "total"]].groupby(["year_month", "crime_type"]).sum().reset_index()
 
     # Get from the dataframe the extreme values to be used for the graphs.
     year_min = grouped_year_month_df["year_month"].min()
     year_max = grouped_year_month_df["year_month"].max()
+    total_min = grouped_year_month_df["total"].min()
+    total_max = grouped_year_month_df["total"].max()
+    total_mean = grouped_year_month_df["total"].mean()
 
     # Create the line graph with the total per year.
     year_line_figure = go.Figure(
@@ -278,25 +264,72 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
             y = grouped_year_month_df["total"],
             mode = "lines"
         ),
-        layout = {
-            "height": 500,
-            "title": "Total Crimes by Year-Month",
-            "xaxis": {
-                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")]
-            }
-        },
+        layout = go.Layout(
+            xaxis = {
+                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")],
+                "autorange": False
+            },
+            yaxis = {
+                "range": [int(-(total_mean) * 0.1), (total_max * 1.1)],
+                "autorange": False
+            },
+            # Define the button that will trigger the graph animation.
+            updatemenus = [
+                {
+                    "type": "buttons",
+                    "buttons": [
+                        {
+                            "label": "Play",
+                            "method": "animate",
+                            "args": [
+                                    None,
+                                    {
+                                        "frame": {
+                                            "duration": 50,
+                                            "redraw": False
+                                        },
+                                        "fromcurrent": True,
+                                        "transition": {
+                                            "duration": 0
+                                        }
+                                    }
+                                ]
+                        }
+                    ],
+                    "x": 0.57,
+                    "y": -0.1
+                }
+            ]
+        ),
+        # Define the frames for each year step.
+        frames = [
+            go.Frame(
+                data = [
+                    go.Scatter(
+                        x = grouped_year_month_df[grouped_year_month_df["year_month"] <= year_month]["year_month"],
+                        y = grouped_year_month_df[grouped_year_month_df["year_month"] <= year_month]["total"],
+                        mode = "lines"
+                    )
+                ]
+            )
+            for year_month in grouped_year_month_df["year_month"].unique()
+        ]
     )
 
     # Get from the dataframe the extreme values to be used for the graphs.
-    year_min = grouped_year_month_crime_df["year_month"].min()
-    year_max = grouped_year_month_crime_df["year_month"].max()
+    year_min = grouped_year_crime_df["year_month"].min()
+    year_max = grouped_year_crime_df["year_month"].max()
+    total_min = grouped_year_crime_df["total"].min()
+    total_max = grouped_year_crime_df["total"].max()
+    total_mean = grouped_year_crime_df["total"].mean()
 
-    # Define the list that will containg the traces for the graph by crime_type.
+    # Define the list that will containg the frames for the graph by crime_type.
     base_data = []
+    frames_data = []
 
     # Create a trace (frame) for each crime_type through the years.
-    for crime_type in grouped_year_month_crime_df["crime_type"].unique():
-        crime_type_df = grouped_year_month_crime_df[grouped_year_month_crime_df["crime_type"] == crime_type]
+    for crime_type in grouped_year_crime_df["crime_type"].unique():
+        crime_type_df = grouped_year_crime_df[grouped_year_crime_df["crime_type"] == crime_type]
 
         base_data.append(
             go.Scatter(
@@ -307,33 +340,100 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
             )
         )
 
+    # Create a trace (frame) for each crime_type for each year step.
+    for year_month in grouped_year_month_df["year_month"].unique():
+        frame_year_data = []
+
+        for crime_type in grouped_year_crime_df["crime_type"].unique():
+            crime_type_df = grouped_year_crime_df[
+                (grouped_year_crime_df["crime_type"] == crime_type) &
+                (grouped_year_crime_df["year_month"] <= year_month)
+            ]
+
+            frame_year_data.append(
+                go.Scatter(
+                    x = crime_type_df["year_month"],
+                    y = crime_type_df["total"],
+                    name = crime_type,
+                    mode = "lines"
+                )
+            )
+
+        frames_data.append(
+            go.Frame (
+                data = frame_year_data
+            )
+        )
+
     # Create the line graph with the total per crime_type per year.
     year_crime_line_figure = go.Figure(
         data = base_data,
-        layout = {
-            "height": 500,
-            "title": "Crimes by Year-Month",
-            "xaxis": {
-                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")]
+        layout = go.Layout(
+            xaxis = {
+                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")],
+                "autorange": False
             },
-            "colorway": color_scale
-        }
+            yaxis = {
+                "range": [int(-(total_mean) * 0.1), (total_max * 1.1)],
+                "autorange": False
+            },
+            updatemenus = [
+                {
+                    "type": "buttons",
+                    "buttons": [
+                        {
+                            "label": "Play",
+                            "method": "animate",
+                            "args": [
+                                    None,
+                                    {
+                                        "frame": {
+                                            "duration": 50,
+                                            "redraw": False
+                                        },
+                                        "fromcurrent": True,
+                                        "transition": {
+                                            "duration": 0
+                                        }
+                                    }
+                                ]
+                        }
+                    ],
+                    "x": 0.57,
+                    "y": -0.1
+                }
+            ],
+            colorway = color_scale
+        ),
+        frames = frames_data
     )
 
-    # Create the bar graph with the total crimes per month
-    months_list = grouped_month_df["month"].unique()
-    month_bar_figure = go.Figure(
-        data = [
-            go.Bar( x = grouped_month_df["month"], y = grouped_month_df["total"])
-        ],
-        layout = {
-            "height": 500,
-            "title": "Total Crimes by Month",
-            "xaxis": {
-                "tickvals": months_list,
-                "ticktext": [calendar.month_abbr[month] for month in months_list]
-            }
-        }
-    )
+    # Define base layout using Bootstrap grid system.
+    layout = html.Div([
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dcc.Graph(
+                            id="year-line-graph",
+                            figure = year_line_figure
+                        )
+                    ],
+                    lg = 6,
+                    sm = 12
+                ),
+                dbc.Col(
+                    [
+                        dcc.Graph(
+                            id="year-crime-line-graph",
+                            figure = year_crime_line_figure
+                        )
+                    ],
+                    lg = 6,
+                    sm = 12
+                )
+            ]
+        )
+    ])
 
-    return [year_line_figure, year_crime_line_figure, month_bar_figure]
+    return [year_line_figure, year_crime_line_figure]

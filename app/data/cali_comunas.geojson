@@ -13,7 +13,9 @@
                 "id_comuna": "mc_comunas.330",
                 "comuna": "Comuna 6",
                 "area": 5385422.149,
-                "perimetro": 12496.285
+                "perimetro": 12496.285,
+                "center_latitude": 3.492688828934053,
+                "center_longitude": -76.4923095703125
             },
             "geometry": {
                 "type": "Polygon",
@@ -27,7 +29,9 @@
                 "id_comuna": "mc_comunas.331",
                 "comuna": "Comuna 4",
                 "area": 4524983.049,
-                "perimetro": 11430.279
+                "perimetro": 11430.279,
+                "center_latitude": 3.465444972409914,
+                "center_longitude": -76.51230812072754
             },
             "geometry": {
                 "type": "Polygon",
@@ -41,7 +45,9 @@
                 "id_comuna": "mc_comunas.332",
                 "comuna": "Comuna 5",
                 "area": 4197624.307,
-                "perimetro": 8441.174
+                "perimetro": 8441.174,
+                "center_latitude": 3.4719561543455115,
+                "center_longitude": -76.49539947509766
             },
             "geometry": {
                 "type": "Polygon",
@@ -55,7 +61,9 @@
                 "id_comuna": "mc_comunas.333",
                 "comuna": "Comuna 7",
                 "area": 5107266.513,
-                "perimetro": 12547.823
+                "perimetro": 12547.823,
+                "center_latitude": 3.457991327560781,
+                "center_longitude": -76.48449897766113
             },
             "geometry": {
                 "type": "Polygon",
@@ -69,7 +77,9 @@
                 "id_comuna": "mc_comunas.334",
                 "comuna": "Comuna 8",
                 "area": 5266743.456,
-                "perimetro": 12178.376
+                "perimetro": 12178.376,
+                "center_latitude": 3.4464252109765994,
+                "center_longitude": -76.50896072387695
             },
             "geometry": {
                 "type": "Polygon",
@@ -83,7 +93,9 @@
                 "id_comuna": "mc_comunas.335",
                 "comuna": "Comuna 9",
                 "area": 2899408.689,
-                "perimetro": 7983.949
+                "perimetro": 7983.949,
+                "center_latitude": 3.4423127800583724,
+                "center_longitude": -76.52277946472168
             },
             "geometry": {
                 "type": "Polygon",
@@ -97,7 +109,9 @@
                 "id_comuna": "mc_comunas.336",
                 "comuna": "Comuna 21",
                 "area": 4828926.999,
-                "perimetro": 16149.224
+                "perimetro": 16149.224,
+                "center_latitude": 3.4334024521866033,
+                "center_longitude": -76.46793365478516
             },
             "geometry": {
                 "type": "Polygon",
@@ -111,7 +125,9 @@
                 "id_comuna": "mc_comunas.337",
                 "comuna": "Comuna 13",
                 "area": 4737261.830,
-                "perimetro": 10030.224
+                "perimetro": 10030.224,
+                "center_latitude": 3.4266339744804135,
+                "center_longitude": -76.49239540100098
             },
             "geometry": {
                 "type": "Polygon",
@@ -125,7 +141,9 @@
                 "id_comuna": "mc_comunas.349",
                 "comuna": "Comuna 1",
                 "area": 3842242.577,
-                "perimetro": 15518.149
+                "perimetro": 15518.149,
+                "center_latitude": 3.455506766250829,
+                "center_longitude": -76.5578842163086
             },
             "geometry": {
                 "type": "Polygon",
@@ -139,7 +157,9 @@
                 "id_comuna": "mc_comunas.350",
                 "comuna": "Comuna 3",
                 "area": 3704462.889,
-                "perimetro": 11003.318
+                "perimetro": 11003.318,
+                "center_latitude": 3.4467679127510067,
+                "center_longitude": -76.53616905212402
             },
             "geometry": {
                 "type": "Polygon",
@@ -153,7 +173,9 @@
                 "id_comuna": "mc_comunas.351",
                 "comuna": "Comuna 19",
                 "area": 11318090.525,
-                "perimetro": 26480.361
+                "perimetro": 26480.361,
+                "center_latitude": 3.421236293383567,
+                "center_longitude": -76.54458045959473
             },
             "geometry": {
                 "type": "Polygon",
@@ -167,7 +189,9 @@
                 "id_comuna": "mc_comunas.338",
                 "comuna": "Comuna 12",
                 "area": 2329397.941,
-                "perimetro": 8254.095
+                "perimetro": 8254.095,
+                "center_latitude": 3.4340021884052967,
+                "center_longitude": -76.50192260742188
             },
             "geometry": {
                 "type": "Polygon",
@@ -181,7 +205,9 @@
                 "id_comuna": "mc_comunas.341",
                 "comuna": "Comuna 10",
                 "area": 4297730.149,
-                "perimetro": 9404.276
+                "perimetro": 9404.276,
+                "center_latitude": 3.4184089244831846,
+                "center_longitude": -76.5278434753418
             },
             "geometry": {
                 "type": "Polygon",
@@ -195,7 +221,9 @@
                 "id_comuna": "mc_comunas.342",
                 "comuna": "Comuna 20",
                 "area": 2439498.349,
-                "perimetro": 8448.577
+                "perimetro": 8448.577,
+                "center_latitude": 3.418665958364054,
+                "center_longitude": -76.56020164489746
             },
             "geometry": {
                 "type": "Polygon",
@@ -209,7 +237,9 @@
                 "id_comuna": "mc_comunas.343",
                 "comuna": "Comuna 16",
                 "area": 4275833.686,
-                "perimetro": 11700.410
+                "perimetro": 11700.410,
+                "center_latitude": 3.4084702283172987,
+                "center_longitude": -76.5117073059082
             },
             "geometry": {
                 "type": "Polygon",
@@ -223,7 +253,9 @@
                 "id_comuna": "mc_comunas.344",
                 "comuna": "Comuna 15",
                 "area": 4060432.724,
-                "perimetro": 10425.092
+                "perimetro": 10425.092,
+                "center_latitude": 3.4058998591370124,
+                "center_longitude": -76.50020599365234
             },
             "geometry": {
                 "type": "Polygon",
@@ -237,7 +269,9 @@
                 "id_comuna": "mc_comunas.345",
                 "comuna": "Comuna 17",
                 "area": 12555929.024,
-                "perimetro": 16841.538
+                "perimetro": 16841.538,
+                "center_latitude": 3.384993935365793,
+                "center_longitude": -76.5336799621582
             },
             "geometry": {
                 "type": "Polygon",
@@ -251,7 +285,9 @@
                 "id_comuna": "mc_comunas.346",
                 "comuna": "Comuna 18",
                 "area": 5428611.017,
-                "perimetro": 11681.301
+                "perimetro": 11681.301,
+                "center_latitude": 3.3825091848636757,
+                "center_longitude": -76.552734375
             },
             "geometry": {
                 "type": "Polygon",
@@ -265,7 +301,9 @@
                 "id_comuna": "mc_comunas.339",
                 "comuna": "Comuna 14",
                 "area": 4543322.069,
-                "perimetro": 8937.073
+                "perimetro": 8937.073,
+                "center_latitude": 3.425091782986134,
+                "center_longitude": -76.47746086120605
             },
             "geometry": {
                 "type": "Polygon",
@@ -279,7 +317,9 @@
                 "id_comuna": "mc_comunas.340",
                 "comuna": "Comuna 11",
                 "area": 3699600.968,
-                "perimetro": 9315.019
+                "perimetro": 9315.019,
+                "center_latitude": 3.4232925564361896,
+                "center_longitude": -76.51531219482422
             },
             "geometry": {
                 "type": "Polygon",
@@ -293,7 +333,9 @@
                 "id_comuna": "mc_comunas.348",
                 "comuna": "Comuna 2",
                 "area": 11401109.159,
-                "perimetro": 26477.419
+                "perimetro": 26477.419,
+                "center_latitude": 3.4785529639444213,
+                "center_longitude": -76.52114868164062
             },
             "geometry": {
                 "type": "Polygon",
@@ -307,7 +349,9 @@
                 "id_comuna": "mc_comunas.347",
                 "comuna": "Comuna 22",
                 "area": 10589124.983,
-                "perimetro": 15552.137
+                "perimetro": 15552.137,
+                "center_latitude": 3.3513207418664135,
+                "center_longitude": -76.53573989868164
             },
             "geometry": {
                 "type": "Polygon",

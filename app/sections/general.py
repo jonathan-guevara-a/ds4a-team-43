@@ -42,6 +42,21 @@ with open('data/cali_barrios.geojson', encoding = "utf-8") as geo:
 with open('data/cali_comunas.geojson', encoding = "utf-8") as geo:
     commune_geojson = json.loads(geo.read())
 
+communes_list = []
+
+for feature in commune_geojson["features"]:
+    commune = {}
+
+    if int(feature["id"]) > 22:
+        break
+
+    commune["id"] = feature["id"]
+    commune["center_latitude"] = feature["properties"]["center_latitude"]
+    commune["center_longitude"] = feature["properties"]["center_longitude"]
+    communes_list.append(commune)
+
+communes_geojson_df = pd.DataFrame(communes_list)
+
 # Filter out the "corregimientos" in order to add a layer to the boroughs map.
 base_commune_geojson = commune_geojson.copy()
 base_commune_geojson["features"] = [feature for feature in base_commune_geojson["features"] if "mc_corregimientos" not in feature["properties"]["id_comuna"]]
@@ -49,7 +64,7 @@ base_commune_geojson["features"] = [feature for feature in base_commune_geojson[
 # Create database connection.
 engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}", max_overflow = 20)
 
-# Retrieve summarized information to display.
+# Retrieve summarized crimes information to display.
 query = """
     SELECT      YEAR,
                 MONTH,
@@ -62,15 +77,29 @@ query = """
                 TOTAL
     FROM        TARGETING.VW_CRIMES_YEAR_MONTH
 """
-base_df = pd.read_sql_query(query, con = engine)
+base_crimes_df = pd.read_sql_query(query, con = engine)
+
+# Retrieve summarized perception information to display.
+query = """
+    SELECT      YEAR,
+                COMMUNE,
+                INSECURE,
+                SECURE,
+                TOTAL
+    FROM        TARGETING.VW_PERCEPTION_YEAR;
+"""
+base_perception_df = pd.read_sql_query(query, con = engine)
+base_perception_df["insecure_percentage"] = base_perception_df["insecure"] / base_perception_df["total"]
+base_perception_df["secure_percentage"] = base_perception_df["secure"] / base_perception_df["total"]
+commune_perception_df = pd.merge(base_perception_df, communes_geojson_df, left_on = "commune", right_on = "id")
 
 # Get from the dataframe the unique values from some columns that are going to be used as filters.
-year_min = base_df["year"].min()
-year_max = base_df["year"].max()
-zone_list = sorted(base_df["borough_zone"].unique())
-commune_list = sorted(base_df["borough_commune"].unique())
-borough_list = sorted(base_df["borough_name"].unique())
-crime_list = sorted(base_df["crime_type"].unique())
+year_min = base_crimes_df["year"].min()
+year_max = base_crimes_df["year"].max()
+zone_list = sorted(base_crimes_df["borough_zone"].unique())
+commune_list = sorted(base_crimes_df["borough_commune"].unique())
+borough_list = sorted(base_crimes_df["borough_name"].unique())
+crime_list = sorted(base_crimes_df["crime_type"].unique())
 
 # Create an empty map to be displayed at start up.
 map_figure = go.Figure(
@@ -97,12 +126,12 @@ layout = html.Div([
                     html.H3("Filters"),
                     html.Label("Year:"),
                     html.Br(),
-                    dcc.RangeSlider(
+                    dcc.Slider(
                         id = "year-slider",
                         dots = True,
                         min = year_min,
                         max = year_max,
-                        value = [year_min, year_max],
+                        value = 2019,
                         step = 1,
                         marks = {
                             i : {
@@ -245,16 +274,20 @@ layout = html.Div([
 def update_map(year, month, zone, commune, borough, crime, corregimientos):
     # Filter the base dataframe using the selected filters, if they have values.
     # Each filter is cumulative and has a hierarchy.
-    filtered_df = base_df.copy()
+    filtered_df = base_crimes_df.copy()
+    filtered_perception_df = commune_perception_df.copy()
+
+    print(year)
 
     if (len(corregimientos) == 0):
         filtered_df = filtered_df[filtered_df["borough_zone"] != "Corregimiento"]
 
     if (year):
         filtered_df = filtered_df[
-            (filtered_df["year"] >= year[0]) &
-            (filtered_df["year"] <= year[1])
+            filtered_df["year"] == year
         ]
+
+        filtered_perception_df = filtered_perception_df[filtered_perception_df["year"] == year]
 
     if (month):
         filtered_df = filtered_df[
@@ -305,7 +338,11 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
                 geojson = borough_geojson,
                 locations = filtered_borough_df["borough_id"],
                 z = filtered_borough_df["total"],
-                colorscale = "Viridis",
+                colorscale = [
+                    [0.0, "rgb(49,54,149)"],
+                    [0.5, "rgb(254,224,144)"],
+                    [1.0, "rgb(165,0,38)"]
+                ],
                 marker_opacity = 0.5,
                 marker_line_width=0.5,
                 marker_line_color='gray',
@@ -329,29 +366,69 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
                 "l": 0,
                 "r": 0,
                 "b": 0
-            }
+            },
+            "title_text": "Total Crimes per Borough",
         }
     )
 
     # Update the map with the new data.
     map_figure_2 = go.Figure(
-        go.Choroplethmapbox(
-            geojson = commune_geojson,
-            locations = filtered_borough_df["borough_commune"],
-            z = filtered_borough_df["total"],
-            colorscale = "Viridis",
-            marker_opacity = 0.5,
-            marker_line_width=0.5,
-            marker_line_color='gray',
-            text = filtered_commune_df["text"]
+        data = [
+            go.Choroplethmapbox()
+        ],
+        layout = {
+            "mapbox_style": "carto-positron",
+            "mapbox_zoom": 11,
+            "mapbox_center": {"lat": 3.420, "lon": -76.530},
+            "mapbox_layers": [
+                {
+                    "sourcetype": "geojson",
+                    "source": base_commune_geojson,
+                    "type": "line",
+                }
+            ],
+            "height": 700,
+            "margin": {
+                "l": 0,
+                "r": 0,
+                "b": 0
+            },
+            "title_text": "Security Perception per Commune",
+            "legend": {
+                "yanchor": "top",
+                "y": 0.99,
+                "xanchor": "right",
+                "x": 0.99
+            }
+        }
+    ).add_trace(
+        go.Scattermapbox(
+            name = "% Insecure",
+            mode = "markers",
+            lat = filtered_perception_df["center_latitude"],
+            lon = filtered_perception_df["center_longitude"],
+            marker = go.scattermapbox.Marker(
+                size = filtered_perception_df["insecure_percentage"] * 30,
+                color = "red",
+                opacity = 0.5
+            ),
+            hoverinfo = "text",
+            text = round(filtered_perception_df["insecure_percentage"] * 100, 2)
         )
-    ).update_layout(
-        mapbox_style = "carto-positron",
-        mapbox_zoom = 11,
-        mapbox_center = {"lat": 3.420, "lon": -76.530},
-        height = 700,
-        margin = dict(l = 0, r = 0, b = 0),
-        title_text = 'Total Crimes per Commune',
+    ).add_trace(
+        go.Scattermapbox(
+            name = "% Secure",
+            mode = "markers",
+            lat = filtered_perception_df["center_latitude"] - 0.003,
+            lon = filtered_perception_df["center_longitude"] - 0.001,
+            marker = go.scattermapbox.Marker(
+                size = filtered_perception_df["secure_percentage"] * 30,
+                color = "green",
+                opacity = 0.5
+            ),
+            hoverinfo = "text",
+            text = round(filtered_perception_df["secure_percentage"] * 100, 2)
+        )
     )
 
     # Update the bar graph with the new data.
