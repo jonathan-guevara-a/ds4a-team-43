@@ -64,7 +64,7 @@ layout = html.Div(
                                     label = "Future Work", tab_id = "future-work-tab")
                             ],
                             id = "navigation-tabs",
-                            active_tab = "general-tab"
+                            active_tab = "criminal-activity-tab"
                         )
                     ]
                 )

@@ -92,7 +92,7 @@ GROUP BY    YEAR,
 
 DROP MATERIALIZED VIEW TARGETING.VW_PERCEPTION_VARIABLES_YEAR;
 CREATE      MATERIALIZED VIEW TARGETING.VW_PERCEPTION_VARIABLES_YEAR AS
-SELECT      ANIO AS YEAR,
+SELECT      CAST(ANIO AS INT) AS YEAR,
             EDAD AS AGE_RANGE,
             ESCOLARIDAD AS EDUCATION_CODE,
             CASE
@@ -121,3 +121,36 @@ GROUP BY    ANIO,
             EDAD,
             ESCOLARIDAD,
             ESTRATO;
+
+DROP MATERIALIZED VIEW TARGETING.VW_CRIMES_VICTIM_DATETIME;
+CREATE      MATERIALIZED VIEW TARGETING.VW_CRIMES_VICTIM_DATETIME AS
+SELECT      DATE_TIME,
+            CRIME_TYPE,
+            CRIME_CHAPTER,
+            BOROUGH_ID,
+            BOROUGH_NAME,
+            BOROUGH_COMMUNE,
+            BOROUGH_STRATUM,
+            BOROUGH_ZONE,
+            AGE_RANGE,
+            SEX,
+            EDUCATION,
+            QUANTITY
+FROM        (
+                SELECT      ACTIVITY.FECHAHORA AS DATE_TIME,
+                            ACTIVITY.TIPO_CRIMEN AS CRIME_TYPE,
+                            ACTIVITY.CAPITULO AS CRIME_CHAPTER,
+                            ACTIVITY.ID_BARRIO AS BOROUGH_ID,
+                            BOROUGH.BARRIO AS BOROUGH_NAME,
+                            BOROUGH.COMUNA AS BOROUGH_COMMUNE,
+                            CAST(BOROUGH.ESTRA_MODA AS INT) AS BOROUGH_STRATUM,
+                            BOROUGH.ZONA AS BOROUGH_ZONE,
+                            RANGO_EDAD AS AGE_RANGE,
+                            SEXO AS SEX,
+                            ESCOLARIDAD AS EDUCATION,
+                            CAST(ACTIVITY.CANTIDAD AS INT) AS QUANTITY
+                FROM        TARGETING.FCT_ACT_CRIMINAL AS ACTIVITY
+                            INNER JOIN
+                            TARGETING.DIM_BARRIOS AS BOROUGH
+                                ON BOROUGH.ID_BARRIO = ACTIVITY.ID_BARRIO
+            ) AS SUMMARY;

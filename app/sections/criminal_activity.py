@@ -47,18 +47,24 @@ engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_
 
 # Retrieve summarized information to display.
 query = """
-    SELECT      YEAR,
-                MONTH,
+    SELECT      DATE_TIME,
                 CRIME_TYPE,
+                CRIME_CHAPTER,
                 BOROUGH_ID,
                 BOROUGH_NAME,
                 BOROUGH_COMMUNE,
                 BOROUGH_STRATUM,
                 BOROUGH_ZONE,
-                TOTAL
-    FROM        TARGETING.VW_CRIMES_YEAR_MONTH
+                AGE_RANGE,
+                SEX,
+                REPLACE(EDUCATION, '-', 'NO APLICA') AS EDUCATION,
+                QUANTITY
+    FROM        TARGETING.VW_CRIMES_VICTIM_DATETIME
 """
 base_df = pd.read_sql_query(query, con = engine)
+base_df["year"] = base_df["date_time"].dt.year
+base_df["month"] = base_df["date_time"].dt.month
+base_df["day"] = base_df["date_time"].dt.day
 base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
 
 # Get from the dataframe the unique values from some columns that are going to be used as filters.
@@ -173,17 +179,6 @@ layout = html.Div([
                                 dbc.Col(
                                     [
                                         dcc.Graph(
-                                            id="year-line-graph"
-                                        )
-                                    ]
-                                ),
-                            ]
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    [
-                                        dcc.Graph(
                                             id="year-crime-line-graph"
                                         )
                                     ]
@@ -195,9 +190,77 @@ layout = html.Div([
                                 dbc.Col(
                                     [
                                         dcc.Graph(
-                                            id="month-bar-graph"
+                                            id="age-graph"
                                         )
-                                    ]
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                ),
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="education-graph"
+                                        )
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                )
+                            ]
+                        ),
+                        html.H3("Victims By Sex"),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="sex-chapter-1-graph"
+                                        )
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                ),
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="sex-chapter-2-graph"
+                                        )
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                )
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="sex-chapter-3-graph"
+                                        )
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                ),
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="sex-chapter-4-graph"
+                                        )
+                                    ],
+                                    lg = 6,
+                                    sm = 12
+                                )
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
+                                            id="sex-chapter-5-graph"
+                                        )
+                                    ],
+                                    width = {"size": 6, "offset": 3}
                                 )
                             ]
                         )
@@ -214,9 +277,14 @@ layout = html.Div([
 # Define callback to update all graphs according to the user's filter selections.
 @app.callback(
     [
-        Output('year-line-graph', 'figure'),
         Output('year-crime-line-graph', 'figure'),
-        Output('month-bar-graph', 'figure')
+        Output('age-graph', 'figure'),
+        Output('education-graph', 'figure'),
+        Output('sex-chapter-1-graph', 'figure'),
+        Output('sex-chapter-2-graph', 'figure'),
+        Output('sex-chapter-3-graph', 'figure'),
+        Output('sex-chapter-4-graph', 'figure'),
+        Output('sex-chapter-5-graph', 'figure'),
     ],
     [
         Input('year-slider', 'value'),
@@ -260,36 +328,17 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     if (crime):
         filtered_df = filtered_df[filtered_df["crime_type"].isin(crime)]
 
-    # Get the dataframe grouped by year-month.
-    grouped_year_month_df = filtered_df[["year_month", "total"]].groupby(["year_month"]).sum().reset_index()
-    # Get the dataframe grouped by year-month and crime_type.
-    grouped_year_month_crime_df = filtered_df[["year_month", "crime_type", "total"]].groupby(["year_month", "crime_type"]).sum().reset_index()
+        # Get the dataframe grouped by year-month and crime_type.
+    grouped_year_month_crime_df = filtered_df[["year_month", "crime_type", "quantity"]].groupby(["year_month", "crime_type"]).sum().reset_index()
     # Get the dataframe by grouped by month.
-    grouped_month_df = filtered_df[["month", "total"]].groupby(["month"]).sum().reset_index()
+    grouped_month_df = filtered_df[["month", "quantity"]].groupby(["month"]).sum().reset_index()
+    # Get the dataframe by grouped by age_range.
+    grouped_age_df = filtered_df[["age_range", "quantity"]].groupby(["age_range"]).sum().reset_index()
+    # Get the dataframe by grouped by education.
+    grouped_education_df = filtered_df[["education", "quantity"]].groupby(["education"]).sum().reset_index()
+    # Get the dataframe by grouped by crime_chapter and sex.
+    grouped_sex_chapter_df = filtered_df[filtered_df["sex"].isin(["MASCULINO", "FEMENINO"])][["year_month", "crime_chapter", "sex", "quantity"]].groupby(["year_month", "crime_chapter", "sex"]).sum().reset_index()
 
-    # Get from the dataframe the extreme values to be used for the graphs.
-    year_min = grouped_year_month_df["year_month"].min()
-    year_max = grouped_year_month_df["year_month"].max()
-
-    # Create the line graph with the total per year.
-    year_line_figure = go.Figure(
-        go.Scatter(
-            x = grouped_year_month_df["year_month"],
-            y = grouped_year_month_df["total"],
-            mode = "lines"
-        ),
-        layout = {
-            "height": 500,
-            "title": "Total Crimes by Year-Month",
-            "xaxis": {
-                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")]
-            }
-        },
-    )
-
-    # Get from the dataframe the extreme values to be used for the graphs.
-    year_min = grouped_year_month_crime_df["year_month"].min()
-    year_max = grouped_year_month_crime_df["year_month"].max()
 
     # Define the list that will containg the traces for the graph by crime_type.
     base_data = []
@@ -301,7 +350,7 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         base_data.append(
             go.Scatter(
                 x = crime_type_df["year_month"],
-                y = crime_type_df["total"],
+                y = crime_type_df["quantity"],
                 name = crime_type,
                 mode = "lines"
             )
@@ -311,12 +360,40 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     year_crime_line_figure = go.Figure(
         data = base_data,
         layout = {
-            "height": 500,
+            "height": 700,
             "title": "Crimes by Year-Month",
-            "xaxis": {
-                "range": [year_min - pd.Timedelta("60 day"), year_max + pd.Timedelta("60 day")]
-            },
             "colorway": color_scale
+        }
+    )
+
+    age_bar_figure = go.Figure(
+        data = [
+            go.Bar (
+                x = grouped_age_df["age_range"],
+                y = grouped_age_df["quantity"],
+                marker = {
+                    "color": color_scale
+                }
+            )
+        ],
+        layout = {
+            "title": "Victims by Age",
+            "colorway": color_scale
+        }
+    )
+
+    education_bar_figure = go.Figure(
+        data = [
+            go.Bar (
+                x = grouped_education_df["education"],
+                y = grouped_education_df["quantity"],
+                marker = {
+                    "color": color_scale
+                }
+            )
+        ],
+        layout = {
+            "title": "Victims by Education",
         }
     )
 
@@ -324,10 +401,10 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     months_list = grouped_month_df["month"].unique()
     month_bar_figure = go.Figure(
         data = [
-            go.Bar( x = grouped_month_df["month"], y = grouped_month_df["total"])
+            go.Bar( x = grouped_month_df["month"], y = grouped_month_df["quantity"])
         ],
         layout = {
-            "height": 500,
+            "height": 700,
             "title": "Total Crimes by Month",
             "xaxis": {
                 "tickvals": months_list,
@@ -336,4 +413,17 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
-    return [year_line_figure, year_crime_line_figure, month_bar_figure]
+    sex_chapter_graphs_list = []
+
+    for chapter in grouped_sex_chapter_df["crime_chapter"].unique():
+        sex_chapter_graphs_list.append(
+            px.line(
+                grouped_sex_chapter_df[grouped_sex_chapter_df["crime_chapter"] == chapter],
+                x = "year_month",
+                y = "quantity",
+                color = "sex",
+                title = chapter
+            )
+        )
+
+    return [year_crime_line_figure, age_bar_figure, education_bar_figure] + sex_chapter_graphs_list

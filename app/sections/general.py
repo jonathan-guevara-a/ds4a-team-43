@@ -403,20 +403,6 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         }
     ).add_trace(
         go.Scattermapbox(
-            name = "% Insecure",
-            mode = "markers",
-            lat = filtered_perception_df["center_latitude"],
-            lon = filtered_perception_df["center_longitude"],
-            marker = go.scattermapbox.Marker(
-                size = filtered_perception_df["insecure_percentage"] * 30,
-                color = "red",
-                opacity = 0.5
-            ),
-            hoverinfo = "text",
-            text = round(filtered_perception_df["insecure_percentage"] * 100, 2)
-        )
-    ).add_trace(
-        go.Scattermapbox(
             name = "% Secure",
             mode = "markers",
             lat = filtered_perception_df["center_latitude"] - 0.003,
@@ -428,6 +414,20 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
             ),
             hoverinfo = "text",
             text = round(filtered_perception_df["secure_percentage"] * 100, 2)
+        )
+    ).add_trace(
+        go.Scattermapbox(
+            name = "% Insecure",
+            mode = "markers",
+            lat = filtered_perception_df["center_latitude"],
+            lon = filtered_perception_df["center_longitude"],
+            marker = go.scattermapbox.Marker(
+                size = filtered_perception_df["insecure_percentage"] * 30,
+                color = "red",
+                opacity = 0.5
+            ),
+            hoverinfo = "text",
+            text = round(filtered_perception_df["insecure_percentage"] * 100, 2)
         )
     )
 
@@ -442,31 +442,23 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
         labels = {
             "borough_name": "Borough",
             "total": "Total",
-            "crime_type": "Type of crime"
+            "crime_type": "Type Of Crime"
         },
         color_discrete_sequence = color_scale
-    ).update_xaxes(categoryorder = "total descending")
+    ).update_xaxes(categoryorder = "total descending")\
+    .update_layout(
+        legend = {
+            "yanchor": "top",
+            "y": 0.99,
+            "xanchor": "right",
+            "x": 0.99
+        }
+    )
 
     # Create a new columns with a longer name for the commune.
     filtered_crime_commune_df["commune_name"] = filtered_crime_commune_df["borough_commune"].apply(
         lambda x: "Commune " + x
     )
-
-    # Update the bar graph with the new data.
-    bar_figure_2 = px.bar(
-        filtered_crime_commune_df,
-        x = "commune_name",
-        y = "total",
-        color = "crime_type",
-        height = 700,
-        title = "Crimes per Commune",
-        labels = {
-            "commune_name": "Commune",
-            "total": "Total",
-            "crime_type": "Type of crime"
-        },
-        color_discrete_sequence = color_scale
-    ).update_xaxes(type = "category", categoryorder = "total descending")
 
     # Return the figures to update.
     return [map_figure_1, bar_figure_1, map_figure_2]

@@ -235,7 +235,7 @@ def update_map(year):
                 layout = go.Layout(
                     barmode = "relative",
                     bargap = 0.3,
-                    title = "Security Perception per Year",
+                    title = "Security Perception by Year",
                     xaxis_title = "Year / " + titles_list[i],
                     yaxis_title = "Percentage (%)"
                 )
