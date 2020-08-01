@@ -64,7 +64,9 @@ query = """
 base_df = pd.read_sql_query(query, con = engine)
 base_df["year"] = base_df["date_time"].dt.year
 base_df["month"] = base_df["date_time"].dt.month
-base_df["day"] = base_df["date_time"].dt.day
+base_df["day"] = base_df["date_time"].dt.dayofweek
+base_df["day_name"] = base_df["date_time"].dt.day_name()
+base_df["hour"] = base_df["date_time"].dt.hour
 base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
 
 # Get from the dataframe the unique values from some columns that are going to be used as filters.
@@ -190,6 +192,17 @@ layout = html.Div([
                                 dbc.Col(
                                     [
                                         dcc.Graph(
+                                            id="day-hour-bar-graph"
+                                        )
+                                    ]
+                                )
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Graph(
                                             id="age-graph"
                                         )
                                     ],
@@ -278,6 +291,7 @@ layout = html.Div([
 @app.callback(
     [
         Output('year-crime-line-graph', 'figure'),
+        Output('day-hour-bar-graph', 'figure'),
         Output('age-graph', 'figure'),
         Output('education-graph', 'figure'),
         Output('sex-chapter-1-graph', 'figure'),
@@ -332,6 +346,8 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     grouped_year_month_crime_df = filtered_df[["year_month", "crime_type", "quantity"]].groupby(["year_month", "crime_type"]).sum().reset_index()
     # Get the dataframe by grouped by month.
     grouped_month_df = filtered_df[["month", "quantity"]].groupby(["month"]).sum().reset_index()
+    # Get the dataframe by grouped by month.
+    grouped_day_hour_df = filtered_df[["day", "day_name", "hour", "quantity"]].groupby(["day", "day_name", "hour"]).sum().reset_index()
     # Get the dataframe by grouped by age_range.
     grouped_age_df = filtered_df[["age_range", "quantity"]].groupby(["age_range"]).sum().reset_index()
     # Get the dataframe by grouped by education.
@@ -360,10 +376,20 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     year_crime_line_figure = go.Figure(
         data = base_data,
         layout = {
-            "height": 700,
+            "height": 500,
             "title": "Crimes by Year-Month",
             "colorway": color_scale
         }
+    )
+
+    day_hour_bar_figure = go.Figure(
+        layout = {
+            "height": 500,
+            "title": "Crimes by Day-Hour"
+        }
+    ).add_bar(
+        x = [grouped_day_hour_df["day_name"], grouped_day_hour_df["hour"]],
+        y = grouped_day_hour_df["quantity"],
     )
 
     age_bar_figure = go.Figure(
@@ -426,4 +452,4 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
             )
         )
 
-    return [year_crime_line_figure, age_bar_figure, education_bar_figure] + sex_chapter_graphs_list
+    return [year_crime_line_figure, day_hour_bar_figure, age_bar_figure, education_bar_figure] + sex_chapter_graphs_list

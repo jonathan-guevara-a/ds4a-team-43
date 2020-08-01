@@ -372,63 +372,39 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
     )
 
     # Update the map with the new data.
+    filtered_perception_df["text"] = "Commune: " + filtered_perception_df["commune"] + \
+        "<br />Insecure: " + round(filtered_perception_df["insecure_percentage"] * 100, 2).astype(str) + "%"\
+        "<br />Secure: "  + round(filtered_perception_df["secure_percentage"] * 100, 2).astype(str) + "%"
     map_figure_2 = go.Figure(
         data = [
-            go.Choroplethmapbox()
+            go.Choroplethmapbox(
+                geojson = base_commune_geojson,
+                locations = filtered_perception_df["commune"],
+                z = round(filtered_perception_df["insecure_percentage"] * 100, 2),
+                colorscale = [
+                    [0.0, "rgb(49,54,149)"],
+                    [0.5, "rgb(254,224,144)"],
+                    [1.0, "rgb(165,0,38)"]
+                ],
+                marker_opacity = 0.5,
+                marker_line_width = 2,
+                marker_line_color = "black",
+                hoverinfo = "text",
+                text = filtered_perception_df["text"]
+            )
         ],
         layout = {
             "mapbox_style": "carto-positron",
             "mapbox_zoom": 11,
             "mapbox_center": {"lat": 3.420, "lon": -76.530},
-            "mapbox_layers": [
-                {
-                    "sourcetype": "geojson",
-                    "source": base_commune_geojson,
-                    "type": "line",
-                }
-            ],
             "height": 700,
             "margin": {
                 "l": 0,
                 "r": 0,
                 "b": 0
             },
-            "title_text": "Security Perception per Commune",
-            "legend": {
-                "yanchor": "top",
-                "y": 0.99,
-                "xanchor": "right",
-                "x": 0.99
-            }
+            "title_text": "Security Perception per Commune"
         }
-    ).add_trace(
-        go.Scattermapbox(
-            name = "% Secure",
-            mode = "markers",
-            lat = filtered_perception_df["center_latitude"] - 0.003,
-            lon = filtered_perception_df["center_longitude"] - 0.001,
-            marker = go.scattermapbox.Marker(
-                size = filtered_perception_df["secure_percentage"] * 30,
-                color = "green",
-                opacity = 0.5
-            ),
-            hoverinfo = "text",
-            text = round(filtered_perception_df["secure_percentage"] * 100, 2)
-        )
-    ).add_trace(
-        go.Scattermapbox(
-            name = "% Insecure",
-            mode = "markers",
-            lat = filtered_perception_df["center_latitude"],
-            lon = filtered_perception_df["center_longitude"],
-            marker = go.scattermapbox.Marker(
-                size = filtered_perception_df["insecure_percentage"] * 30,
-                color = "red",
-                opacity = 0.5
-            ),
-            hoverinfo = "text",
-            text = round(filtered_perception_df["insecure_percentage"] * 100, 2)
-        )
     )
 
     # Update the bar graph with the new data.
