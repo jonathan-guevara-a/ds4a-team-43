@@ -125,14 +125,27 @@ GROUP BY    ANIO,
 CREATE      OR REPLACE VIEW TARGETING.VW_CRIMES_VICTIM_DATETIME AS
 SELECT      DATE_TIME,
             CRIME_TYPE,
-            CRIME_CHAPTER,
+            CASE
+                CRIME_CHAPTER
+                WHEN 'ACTOS SEXUALES ABUSIVOS Y EXPLOTACIÓN SEXUAL' THEN 'ABUSIVE SEXUAL ACTS AND SEXUAL EXPLOITATION'
+                WHEN 'HURTO' THEN 'THEFT'
+                WHEN 'TERRORISMO Y AMENAZAS' THEN 'THREATS AND TERRORISM'
+                WHEN 'LESIONES PERSONALES' THEN 'PERSONAL INJURIES'
+                WHEN 'HOMICIDIO' THEN 'HOMICIDES'
+                ELSE CRIME_CHAPTER
+            END AS CRIME_CHAPTER,
             BOROUGH_ID,
             BOROUGH_NAME,
             BOROUGH_COMMUNE,
             BOROUGH_STRATUM,
             BOROUGH_ZONE,
             AGE_RANGE,
-            SEX,
+            CASE
+                SEX
+                WHEN 'MASCULINO' THEN 'MALE'
+                WHEN 'FEMENINO' THEN 'FEMALE'
+                ELSE SEX
+            END AS SEX,
             EDUCATION,
             QUANTITY
 FROM        (
@@ -160,8 +173,10 @@ SELECT      CAST(ANIO AS INT) AS YEAR,
             MES AS MONTH,
             COMUNA AS COMMUNE,
             CASE
-                WHEN (TIPO_CRIMEN = 'HUR' AND SEXO IN ('-', 'NO APLICA')) OR TIPO_CRIMEN = 'HUR_OTROS' THEN 'NO APLICA'
-                WHEN TIPO_CRIMEN <> 'HUR_OTROS' AND SEXO IN ('-', 'NO APLICA') THEN 'MASCULINO'
+                WHEN (TIPO_CRIMEN = 'HUR' AND SEXO IN ('-', 'NO APLICA')) OR TIPO_CRIMEN = 'HUR_OTROS' THEN 'UNDEFINED'
+                WHEN TIPO_CRIMEN <> 'HUR_OTROS' AND SEXO IN ('-', 'NO APLICA') THEN 'MALE'
+                WHEN SEXO = 'MASCULINO' THEN 'MALE'
+                WHEN SEXO = 'FEMENINO' THEN 'FEMALE'
                 ELSE SEXO
             END AS SEX,
             CASE

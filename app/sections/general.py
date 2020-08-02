@@ -277,8 +277,6 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     filtered_df = base_crimes_df.copy()
     filtered_perception_df = commune_perception_df.copy()
 
-    print(year)
-
     if (len(corregimientos) == 0):
         filtered_df = filtered_df[filtered_df["borough_zone"] != "Corregimiento"]
 

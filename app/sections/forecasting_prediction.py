@@ -1,12 +1,15 @@
 import json
 import calendar
 import pandas as pd
+import joblib
+import os
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from sqlalchemy import create_engine, text
 from application import app
 
@@ -49,12 +52,146 @@ query = """
     FROM        TARGETING.VW_FORECAST_CRIMES
 """
 base_df = pd.read_sql_query(query, con = engine)
+
+query = """
+    SELECT      *
+    FROM        CALI.TOTAL_FORECAST
+"""
+forecast_df = pd.read_sql_query(query, con = engine)
+forecast_df["comuna"] = forecast_df["comuna"].astype(str)
+forecast_df = forecast_df.drop(columns=["anio"])
+forecast_df = forecast_df.rename(
+    columns = {
+        "asx": "ASX",
+        "hom": "HOM",
+        "hur": "HUR",
+        "lep": "LEP",
+        "ter": "TER",
+        "hur_otros": "HUR_OTROS",
+        "c_asx": "C_ASX",
+        "c_hom": "C_HOM",
+        "c_hur": "C_HUR",
+        "c_lep": "C_LEP",
+        "c_ter": "C_TER"
+    }
+)
+forecast_df["HUR_TOTAL"] = forecast_df["HUR"] + forecast_df["HUR_OTROS"]
+
 base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
 commune_list = base_df["commune"].unique()
 color_scale = ["#1f78b4", "#33a02c", "#e31a1c", "#6a3d9a", "#ff7f00", "#b15928"]
 
+labels = ["security", "insecurity"]
+pesimistic = [0.686794, 0.313206]
+base = [0.730697, 0.269303]
+optimistic = [0.786205, 0.213795]
+
+data1 = {
+   "title": {
+        "text":"Pesimistic scenario",
+        "position":"top center",
+        "font": {
+                "size":25
+        }
+    },
+   "values": pesimistic,
+   "labels": labels,
+   "textinfo": "none",
+   "domain": {"column": 0},
+   "name": "pesimistic",
+   "hoverinfo":"label+percent+name",
+   "hole": .6,
+   "type": "pie"
+}
+
+data2 = {
+   "title": {
+        "text":"Baseline prediction",
+        "position":"top center",
+        "font": {
+            "size":25
+        }
+    },
+   "values": base,
+   "labels": labels,
+   "textinfo": "none",
+   "domain": {"column": 1},
+   "name": "base prediction",
+   "hoverinfo": "label+percent+name",
+   "hole": .6,
+   "type": "pie",
+   "marker": {
+        "colors": [
+            "rgb(60,179,113)",
+            "rgb(255, 255, 255)"
+        ]
+    }
+}
+
+data3 = {
+   "title": {
+        "text":"Optimistic scenario",
+        "position":"top center",
+        "font": {
+            "size":25
+        }
+    },
+   "values": optimistic,
+   "labels": labels,
+   "textinfo": "none",
+   "domain": {"column": 2},
+   "name": "optimistic",
+   "hoverinfo": "label+percent+name",
+   "hole": .6,
+   "type": "pie"
+}
+
+data = [data1,data2,data3]
+
+layout = {
+    "title": {
+        "text": "Prediction of security perception 2020",
+        "font":{
+            "size":30
+        },
+        "x": 0.475,
+        "y": 0.95
+    },
+    "grid": {"rows": 1, "columns": 3},
+    "annotations": [
+        {
+            "font": {"size": 30},
+            "showarrow": False,
+            "text": str(round(pesimistic[0] * 100,2)) + "%",
+            "x": 0.115,
+            "y": 0.46
+        },
+        {
+            "font": {"size": 30},
+            "showarrow": False,
+            "text": str(round(base[0] * 100,2)) + "%",
+            "x": 0.505,
+            "y": 0.46
+         },
+         {
+            "font": {"size": 30},
+            "showarrow": False,
+            "text": str(round(optimistic[0] * 100,2)) + "%",
+            "x": 0.875,
+            "y": 0.46
+         }
+    ],
+    "showlegend" : False
+}
+
+# Use `hole` to create a donut-like pie chart
+perception_figure = go.Figure(data=data, layout = layout)
+
 # Define base layout using Bootstrap grid system.
 layout = html.Div([
+    html.Br(),
+    html.H2("Forecasting", className = "text-center"),
+    html.Br(),
     dbc.Row(
         [
             dbc.Col(
@@ -155,12 +292,159 @@ layout = html.Div([
                                     sm = 12
                                 )
                             ]
-                        ),
+                        )
                     ]
                 )
             ],
             lg = 9,
             sm = 12
+            )
+        ]
+    ),
+    html.Br(),
+    html.H2("Prediction", className = "text-center"),
+    html.Br(),
+    dbc.Row(
+        children = [
+            dbc.Col(
+                children = [
+                    html.P(
+                        children = [
+                            "According to historic data and the security perception behavior in Cali, we have estimated that the percentage of citizens that feel secure in the city will be around ",
+                            html.B("73.07%"),
+                            ", with an expected minimum of ",
+                            html.B("68.68%"),
+                            "and an expected maximum of ",
+                             html.B("78.62%.")
+                        ],
+                        className = "text-center"
+                    ),
+                    dcc.Graph(figure = perception_figure),
+                    html.Br(),
+                    html.Br(),
+                    html.Br(),
+                    html.P(
+                        children = [
+                            "Would you like to know your security perception score? where ",
+                            html.B("100 is completely secure"),
+                            " and ",
+                            html.B("0 is completely insecure"),
+                            ". If so, please answer the following survey and then press the ",
+                            html.B("Calculate"),
+                            " button."
+                        ],
+                        className = "text-center"
+                    ),
+                    html.Br(),
+                    html.Br(),
+                    html.Br(),
+                    dbc.Row(
+                        children = [
+                            dbc.Col(
+                                children = [
+                                    html.Label("Commune:"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "commune-prediction-dropdown",
+                                        options = [
+                                            {"label": f"Commune {str(i).zfill(2)}", "value": i} for i in range(1, 23)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("Sex:"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "sex-prediction-dropdown",
+                                        options = [
+                                            {"label": "FEMALE", "value": "FEMENINO"},
+                                            {"label": "MALE", "value": "MASCULINO"}
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("Age Range:"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "age-range-prediction-dropdown",
+                                        options = [
+                                            {"label": str(i).replace("Más de 90", "90+"), "value": f"{i}"} for i in ["10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "Más de 90"]
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("Do you think that corruption levels have changed in the last year in Cali? (1 - Not Agree, 5 - Completely Agree):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "corruption-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("What do you think is the probability of receiving a punishment for committing a crime in your city? (1 - Low, 5 High):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "punity-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("What is your satisfaction level about your borough? (1 - Not Satisfied, 5 - Highly Satisfied):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "satisfaction-borough-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("What is your satisfaction level about your city? (1 - Not Satisfied, 5 - Highly Satisfied):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "satisfaction-city-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("What is your satisfaction level about the work done by your Mayor? (1 - Not Satisfied, 5 - Highly Satisfied):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "mayor-perception-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Label("How secure do you feel in your borough? (1 - Not Secure, 5 Highly Secure):"),
+                                    html.Br(),
+                                    dcc.Dropdown(
+                                        id = "borough-security-prediction-dropdown",
+                                        options = [
+                                            {"label": i, "value": i} for i in range(1, 6)
+                                        ]
+                                    ),
+                                    html.Br(),
+                                    html.Br(),
+                                    html.Br(),
+                                    html.Br(),
+                                    html.Br()
+                                ],
+                                lg = 8,
+                                sm = 12
+                            ),
+                            dbc.Col(
+                                children = [
+                                    dbc.Button("Predict", id = "predict-button", size="lg", color = "success", n_clicks = 0),
+                                    html.P(html.H3("", id = "predict-output"))
+                                ],
+                                lg = 4,
+                                sm = 12,
+                                className = "text-center"
+                            )
+                        ]
+                    )
+                ],
+                width = {"size": 10, "offset": 1}
             )
         ]
     )
@@ -320,3 +604,73 @@ def update_graphs(commune):
         )
 
     return graphs_list
+
+@app.callback(
+    Output("predict-output", "children"),
+    [Input("predict-button", "n_clicks")],
+    [
+        State("commune-prediction-dropdown", "value"),
+        State("sex-prediction-dropdown", "value"),
+        State("age-range-prediction-dropdown", "value"),
+        State("corruption-prediction-dropdown", "value"),
+        State("punity-prediction-dropdown", "value"),
+        State("satisfaction-borough-prediction-dropdown", "value"),
+        State("satisfaction-city-prediction-dropdown", "value"),
+        State("mayor-perception-prediction-dropdown", "value"),
+        State("borough-security-prediction-dropdown", "value"),
+    ]
+)
+def calculate_prediction(n_clicks, commune, sex, age_range, corruption, punity, satisfaction_borough, satisfaction_city, perception_mayor, borough_security):
+    if n_clicks == 0:
+        return ""
+
+    if (commune is None or sex is None or age_range is None or corruption is None or punity is None or satisfaction_borough is None or satisfaction_city is None or perception_mayor is None or borough_security is None):
+        return [html.Br(), html.Br(), html.B("Please answer all the questions.")]
+
+    dict_input = {}
+    dict_input["comuna"] = str(commune)
+    dict_input["sexo"] = sex
+    dict_input["rango_edad"] = age_range
+    dict_input["corrupcion_bin"] = corruption
+    dict_input["punidad_bin"] = punity
+    dict_input["satisfaccion_barrio_bin"] = satisfaction_borough
+    dict_input["satisfaccion_ciudad_bin"] = satisfaction_city
+    dict_input["percepcion_alcalde_bin"] = perception_mayor
+    dict_input["seguridad_barrio_bin"] = borough_security
+
+    dict_input["corrupcion_bin"] = np.where(dict_input["corrupcion_bin"] < 3, 0, 1)
+    dict_input["punidad_bin"] = np.where(dict_input["punidad_bin"] < 3, 0, 1)
+    dict_input["satisfaccion_barrio_bin"] = np.where(dict_input["satisfaccion_barrio_bin"] < 3, 0, 1)
+    dict_input["satisfaccion_ciudad_bin"] = np.where(dict_input["satisfaccion_ciudad_bin"] < 3, 0, 1)
+    dict_input["percepcion_alcalde_bin"] = np.where(dict_input["percepcion_alcalde_bin"] < 3, 0, 1)
+    dict_input["seguridad_barrio_bin"] = np.where(dict_input["seguridad_barrio_bin"] < 3, 0, 1)
+
+    input_df = pd.DataFrame(dict_input,index=[0])
+
+    input_df = pd.merge(input_df, forecast_df, on = ["comuna", "sexo"], how = "left")
+
+    input_df = input_df.drop(columns = ["sexo"])
+    input_df["comuna"] = pd.Categorical(input_df["comuna"],categories=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"])
+    input_df["rango_edad"] = pd.Categorical(input_df["comuna"],categories=["10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "Más de 90"])
+
+    input_df = pd.get_dummies(input_df, columns=["comuna", "rango_edad"], drop_first = True)
+
+    logistic_model = joblib.load("data/logistic_prediction1.pkl")
+
+    cols_logistic = ["seguridad_barrio_bin", "punidad_bin", "satisfaccion_barrio_bin","satisfaccion_ciudad_bin","corrupcion_bin", "percepcion_alcalde_bin","ASX", "HUR_TOTAL", "LEP",
+                     "TER", "C_HOM", "C_HUR", "C_LEP", "comuna_2", "comuna_3", "comuna_4","comuna_5", "comuna_6", "comuna_7", "comuna_8", "comuna_9", "comuna_10",
+                     "comuna_11", "comuna_12", "comuna_13", "comuna_14", "comuna_15","comuna_16", "comuna_17", "comuna_18", "comuna_19", "comuna_20","comuna_21", "comuna_22",
+                     "rango_edad_20-29","rango_edad_30-39", "rango_edad_40-49", "rango_edad_50-59","rango_edad_60-69", "rango_edad_70-79", "rango_edad_80-89","rango_edad_Más de 90"]
+
+    security_rate = logistic_model.predict_proba(input_df[cols_logistic])[:,1]
+
+    return [
+        html.Br(),
+        html.Br(),
+        html.P(
+            children = [
+                "Your security score is: ",
+                round(security_rate[0] * 100, 2)
+            ]
+        )
+    ]
