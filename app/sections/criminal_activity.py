@@ -353,7 +353,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     # Get the dataframe by grouped by education.
     grouped_education_df = filtered_df[["education", "quantity"]].groupby(["education"]).sum().reset_index()
     # Get the dataframe by grouped by crime_chapter and sex.
-    grouped_sex_chapter_df = filtered_df[filtered_df["sex"].isin(["MASCULINO", "FEMENINO"])][["year_month", "crime_chapter", "sex", "quantity"]].groupby(["year_month", "crime_chapter", "sex"]).sum().reset_index()
+    grouped_sex_chapter_df = filtered_df[filtered_df["sex"].isin(["MALE", "FEMALE"])][["year_month", "crime_chapter", "sex", "quantity"]].groupby(["year_month", "crime_chapter", "sex"]).sum().reset_index()
 
 
     # Define the list that will containg the traces for the graph by crime_type.
