@@ -178,7 +178,7 @@ layout = html.Div([
         Input('year-slider', 'value')
     ]
 )
-def update_map(year):
+def update_graphs(year):
     # Filter the base dataframe using the selected filters, if they have values.
     # Each filter is cumulative and has a hierarchy.
     filtered_df = base_df.copy()

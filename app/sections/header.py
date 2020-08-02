@@ -3,7 +3,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from application import app
 from dash.dependencies import Input, Output
-from sections import header, general, criminal_activity, citizens_perception, about_us, future_work
+from sections import header, general, criminal_activity, citizens_perception, forecasting_prediction, about_us, future_work
 
 # Define base layout using Bootstrap grid system.
 layout = html.Div(
@@ -53,15 +53,23 @@ layout = html.Div(
                         dbc.Tabs(
                             children = [
                                 dbc.Tab(
-                                    label = "General", tab_id = "general-tab"),
+                                    label = "General", tab_id = "general-tab"
+                                ),
                                 dbc.Tab(
-                                    label = "Criminal Activity", tab_id = "criminal-activity-tab"),
+                                    label = "Criminal Activity", tab_id = "criminal-activity-tab"
+                                ),
                                 dbc.Tab(
-                                    label = "Citizens Perception", tab_id = "citizens-perception-tab"),
+                                    label = "Citizens Perception", tab_id = "citizens-perception-tab"
+                                ),
                                 dbc.Tab(
-                                    label = "About Us", tab_id = "about-us-tab"),
+                                    label = "Forecasting / Prediction", tab_id = "forecasting-prediction-tab"
+                                ),
                                 dbc.Tab(
-                                    label = "Future Work", tab_id = "future-work-tab")
+                                    label = "About Us", tab_id = "about-us-tab"
+                                ),
+                                dbc.Tab(
+                                    label = "Future Work", tab_id = "future-work-tab"
+                                )
                             ],
                             id = "navigation-tabs",
                             active_tab = "general-tab"
@@ -85,6 +93,8 @@ def switch_tab(active_tab):
         return criminal_activity.layout
     elif active_tab == "citizens-perception-tab":
         return citizens_perception.layout
+    elif active_tab == "forecasting-prediction-tab":
+        return forecasting_prediction.layout
     elif active_tab == "about-us-tab":
         return about_us.layout
     elif active_tab == "future-work-tab":

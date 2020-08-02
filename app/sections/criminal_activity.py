@@ -310,7 +310,7 @@ layout = html.Div([
         Input('corregimientos-check', 'value')
     ]
 )
-def update_map(year, month, zone, commune, borough, crime, corregimientos):
+def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     # Filter the base dataframe using the selected filters, if they have values.
     # Each filter is cumulative and has a hierarchy.
     filtered_df = base_df.copy()

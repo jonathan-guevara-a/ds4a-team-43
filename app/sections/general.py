@@ -271,7 +271,7 @@ layout = html.Div([
         Input('corregimientos-check', 'value')
     ]
 )
-def update_map(year, month, zone, commune, borough, crime, corregimientos):
+def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     # Filter the base dataframe using the selected filters, if they have values.
     # Each filter is cumulative and has a hierarchy.
     filtered_df = base_crimes_df.copy()
@@ -387,7 +387,7 @@ def update_map(year, month, zone, commune, borough, crime, corregimientos):
                     [1.0, "rgb(165,0,38)"]
                 ],
                 marker_opacity = 0.5,
-                marker_line_width = 2,
+                marker_line_width = 0.5,
                 marker_line_color = "black",
                 hoverinfo = "text",
                 text = filtered_perception_df["text"]
