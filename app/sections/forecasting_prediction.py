@@ -85,107 +85,48 @@ labels = ["security", "insecurity"]
 pesimistic = [0.686794, 0.313206]
 base = [0.730697, 0.269303]
 optimistic = [0.786205, 0.213795]
+scenarios_list = [pesimistic, base, optimistic]
+scenarios_titles_list = ["Pesimistic Scenario", "Baseline Prediction", "Optimistic Scenario"]
+pie_graphs_list = []
 
-data1 = {
-   "title": {
-        "text":"Pesimistic scenario",
-        "position":"top center",
-        "font": {
-                "size":25
-        }
-    },
-   "values": pesimistic,
-   "labels": labels,
-   "textinfo": "none",
-   "domain": {"column": 0},
-   "name": "pesimistic",
-   "hoverinfo":"label+percent+name",
-   "hole": .6,
-   "type": "pie"
-}
-
-data2 = {
-   "title": {
-        "text":"Baseline prediction",
-        "position":"top center",
-        "font": {
-            "size":25
-        }
-    },
-   "values": base,
-   "labels": labels,
-   "textinfo": "none",
-   "domain": {"column": 1},
-   "name": "base prediction",
-   "hoverinfo": "label+percent+name",
-   "hole": .6,
-   "type": "pie",
-   "marker": {
-        "colors": [
-            "rgb(60,179,113)",
-            "rgb(255, 255, 255)"
-        ]
-    }
-}
-
-data3 = {
-   "title": {
-        "text":"Optimistic scenario",
-        "position":"top center",
-        "font": {
-            "size":25
-        }
-    },
-   "values": optimistic,
-   "labels": labels,
-   "textinfo": "none",
-   "domain": {"column": 2},
-   "name": "optimistic",
-   "hoverinfo": "label+percent+name",
-   "hole": .6,
-   "type": "pie"
-}
-
-data = [data1,data2,data3]
-
-layout = {
-    "title": {
-        "text": "Prediction of security perception 2020",
-        "font":{
-            "size":30
-        },
-        "x": 0.475,
-        "y": 0.95
-    },
-    "grid": {"rows": 1, "columns": 3},
-    "annotations": [
-        {
-            "font": {"size": 30},
-            "showarrow": False,
-            "text": str(round(pesimistic[0] * 100,2)) + "%",
-            "x": 0.115,
-            "y": 0.46
-        },
-        {
-            "font": {"size": 30},
-            "showarrow": False,
-            "text": str(round(base[0] * 100,2)) + "%",
-            "x": 0.505,
-            "y": 0.46
-         },
-         {
-            "font": {"size": 30},
-            "showarrow": False,
-            "text": str(round(optimistic[0] * 100,2)) + "%",
-            "x": 0.875,
-            "y": 0.46
-         }
-    ],
-    "showlegend" : False
-}
-
-# Use `hole` to create a donut-like pie chart
-perception_figure = go.Figure(data=data, layout = layout)
+for i, scenario in enumerate(scenarios_list):
+    pie_graphs_list.append(
+        go.Figure(
+            data = {
+               "values": scenario,
+               "labels": labels,
+               "textinfo": "none",
+               "hoverinfo": "label+percent+name",
+               "hole": 0.6,
+               "type": "pie",
+               "marker": {
+                    "colors": [
+                        "rgb(60,179,113)",
+                        "rgb(255, 255, 255)"
+                    ]
+                }
+            },
+            layout = {
+                "showlegend" : False,
+                "annotations": [
+                    {
+                        "font": {"size": 20},
+                        "showarrow": False,
+                        "text": scenarios_titles_list[i],
+                        "x": 0.50,
+                        "y": 1.2
+                     },
+                    {
+                        "font": {"size": 20},
+                        "showarrow": False,
+                        "text": str(round(scenario[0] * 100,2)) + "%",
+                        "x": 0.50,
+                        "y": 0.50
+                     }
+                ]
+            }
+        )
+    )
 
 # Define base layout using Bootstrap grid system.
 layout = html.Div([
@@ -310,16 +251,36 @@ layout = html.Div([
                 children = [
                     html.P(
                         children = [
-                            "According to historic data and the security perception behavior in Cali, we have estimated that the percentage of citizens that feel secure in the city will be around ",
+                            "According to historic data and the security perception behavior in Cali, we have estimated that the percentage of citizens for 2020 that feel secure in the city will be around ",
                             html.B("73.07%"),
                             ", with an expected minimum of ",
                             html.B("68.68%"),
-                            "and an expected maximum of ",
+                            " and an expected maximum of ",
                              html.B("78.62%.")
                         ],
                         className = "text-center"
                     ),
-                    dcc.Graph(figure = perception_figure),
+                    html.Br(),
+                    html.H3("Prediction of Security Perception 2020", className = "text-center"),
+                    dbc.Row(
+                        children = [
+                            dbc.Col(
+                                children = [dcc.Graph(id = "prediction-1-pie-graph", figure = pie_graphs_list[0])],
+                                sm = 4,
+                                className = "p-0"
+                            ),
+                            dbc.Col(
+                                children = [dcc.Graph(id = "prediction-2-pie-graph", figure = pie_graphs_list[1])],
+                                sm = 4,
+                                className = "p-0"
+                            ),
+                            dbc.Col(
+                                children = [dcc.Graph(id = "prediction-3-pie-graph", figure = pie_graphs_list[2])],
+                                sm = 4,
+                                className = "p-0"
+                            )
+                        ]
+                    ),
                     html.Br(),
                     html.Br(),
                     html.Br(),
