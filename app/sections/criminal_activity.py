@@ -297,7 +297,7 @@ layout = html.Div([
                                     [
                                         html.Img(src = "assets/criminal_activity_sexual_abuse_1.png", className = "column-picture")
                                     ],
-                                    width = {"size": 5, "offset": 1}
+                                    width = {"size": 5, "offset": 1},
                                     className = "text-center"
                                 ),
                                 dbc.Col(
