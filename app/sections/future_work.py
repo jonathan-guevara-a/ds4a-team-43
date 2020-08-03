@@ -6,38 +6,27 @@ from dash.dependencies import Input, Output
 activites_list = [
     {
         "title": "Lorem ipsum dolor sit amet",
-        "description": """
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        """,
+        "description": [
+            "Incorporate GXBoost predictive model into the website.",
+"            Development and interpretation of a Causal Analysis Model, to identify the causal relationship between people's perception of security and actual criminal activity."
+        ],
         "picture": "graph_1.png"
     },
     {
         "title": "Lorem ipsum dolor sit amet",
-        "description": """
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        """,
+        "description": [
+            "Capture the person's actual score of security perception, to allow the model to continue learning.",
+            "Attach this work with Chispa for further dissemination."
+        ],
         "picture": "graph_2.png"
     },
     {
         "title": "Lorem ipsum dolor sit amet",
-        "description": """
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        """,
+        "description": [
+            "Make this work available in Spanish for access to citizenship.",
+            "Continue the analysis for 2020 - in the hope of having all the details of the data again - and make an analysis of the impact of COVID-19 on criminal activity and the perception of the people of Cali.",
+            "Generate this development for other municipalities in Colombia."
+        ],
         "picture": "graph_3.png"
     },
 ]
@@ -64,8 +53,7 @@ for i, activity in enumerate(activites_list):
                         ),
                         dbc.Col(
                             children = [
-                                html.H4(activity["title"]),
-                                html.P(activity["description"])
+                                html.Ul([html.Li(element) for element in activity["description"]])
                             ]
                         )
                     ],
