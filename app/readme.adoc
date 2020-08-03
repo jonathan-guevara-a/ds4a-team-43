@@ -31,6 +31,9 @@ postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}
 This application was developed using Python and the Dash Framework (by Plotly). Communication with a PostgreSQL was implemented in order to allow
 better interactivty and to only retrieve the necessary data for each user interaction.
 
+* https://asciidoctor.org[Github repository]
+* http://ds4a-security-behaviour-cali.tk[Live Dashboard]
+
 === requirements.txt:
 
 List of libraries required to run the application. These can be installed using the package management system PIP with the following command:
