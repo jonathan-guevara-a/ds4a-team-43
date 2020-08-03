@@ -2,6 +2,15 @@
 
 == Team 43 - Practicum
 
+* Daniel Gaitan Forero
+* Fabio Andrés Sánchez Bernal
+* Jhon Alexander Parra Jiménez
+* Jonathan Guevara Agudelo
+* Luz Elena Thompson Pinzón
+* Maria Camila Manrique Nuñez
+
+This documentation is created using https://asciidoctor.org[Asciidoctor], which is an improved text processor, similar to Markdown, but with more flexibility.
+
 Before running the application, please create a file named **secure/database.txt** with the following structure:
 
 . host
@@ -10,9 +19,73 @@ Before running the application, please create a file named **secure/database.txt
 . database password
 
 The first 4 lines of the file should contain the previous information, without any label or parameter name, since
-these values will be used as follows:
+these values will be used as follows in the expected order:
 
 [source, python]
 ----
 postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}
 ----
+
+== Application structure
+
+This application was developed using Python and the Dash Framework (by Plotly). Communication with a PostgreSQL was implemented in order to allow
+better interactivty and to only retrieve the necessary data for each user interaction.
+
+=== requirements.txt:
+
+List of libraries required to run the application. These can be installed using the package management system PIP with the following command:
+----
+pip install -r requirements.txt
+----
+
+=== application.py
+
+Defines the Dash application and the server.
+
+=== index.py
+
+Starting point of the application. It defines the base layout and starts the Flask server.
+
+=== assets
+
+Folder that stores the images and styles used in the application.
+
+=== data
+
+Folder that stores the static data used in the application:
+
+. Geojsons for the boroughs and communes of Santiago de Cali.
+. Training data for the Logistic Regresion model used for the security perception score.
+
+=== database
+
+Folder with the database structure and data used in the application.
+
+To deploy the database, please execute the SQL scripts in the following order:
+
+. 1_schemas.sql
+. 2_tables.sql
+. 3_views.sql
+
+Finally, the data can ben imported from the file **4_data_export.7z**.
+
+=== sections
+
+Folder that stores the subdivision that was made for each tab or functionality, in order to allow a better development and maintenance.
+
+. header.py: contains all the HTML layout for the application header, which includes the logos, titles and the tabs definition. In this component is defined the callback to display the call the content for each tab.
+. general.py: contains the layout and logic for the tab **General**.
+. criminal_activity.py: contains the layout and logic for the tab **Criminal Activity**.
+. citizens_perception.py: contains the layout and logic for the tab **Citizens Perception**.
+. forecasting_prediction.py: contains the layout and logic for the tab **Forecasting / Prediction**.
+. about_us.py: contains the layout and logic for the tab **About Us**.
+. future_work.py: contains the layout and logic for the tab **Future Work**.
+
+=== secure
+
+Folder that stores a file with the database credential. The structure is explained at the beginning of this file.
+
+
+=== start.sh
+
+This script initializes the Flask server and starts the application. All the output from the runtime is stored in a **nohup.out** file.

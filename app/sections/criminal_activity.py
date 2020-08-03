@@ -276,7 +276,56 @@ layout = html.Div([
                                     width = {"size": 6, "offset": 3}
                                 )
                             ]
-                        )
+                        ),
+                        html.Br(),
+                        html.Br(),
+                        html.Br(),
+                        html.H3("One Of The Most Concern Crime Increasing (sexual Abuse)"),
+                        html.Br(),
+                        html.P(
+                            children = [
+                                " Image below left show the sexual abuse during 2019. Most cases of this type of crime occurred in commune 15, ",
+                                " well known for its high demand of social interests housing and consolidation of moderately developed areas as ",
+                                " well as another focus of sexual abuse  is the Downtown of Cali.  Additionally, image below right, shows how ",
+                                " sexual abuse have been increasing during the last year, particularly 2017-2019, with many cases during the last ",
+                                " year, while as clear the color as cases increases and vice versa."
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        html.Img(src = "assets/criminal_activity_sexual_abuse_1.png", className = "column-picture")
+                                    ],
+                                    lg = 6,
+                                    className = "text-center"
+                                ),
+                                dbc.Col(
+                                    [
+                                        html.Img(src = "assets/criminal_activity_sexual_abuse_2.png", className = "column-picture")
+                                    ],
+                                    lg = 6,
+                                    className = "text-center"
+                                )
+                            ]
+                        ),
+                        html.P(
+                            children = [
+                                " Sexual abuse is increasing as we can observe in image below, where in blue line it shows the total cases (sexual abuse) ",
+                                " by month throughout the years (2010-2019). Whilst the red line corresponds to moving average over 12 periods, showing an ",
+                                " increased tendency during the last years. "
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        html.Img(src = "assets/criminal_activity_sexual_abuse_3.png", className = "column-picture")
+                                    ],
+                                    width = {"size": 6, "offset": 3}
+                                )
+                            ]
+                        ),
                     ]
                 )
             ],

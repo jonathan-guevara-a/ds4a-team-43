@@ -233,7 +233,29 @@ layout = html.Div([
                                     sm = 12
                                 )
                             ]
-                        )
+                        ),
+                        html.Br(),
+                        html.Br(),
+                        html.H3("Another Approach Using Spatial Information"),
+                        html.Br(),
+                        html.P(
+                            children = [
+                                " Due to the nature of the problem about crime activity, beyond time series, we incorporated a different ",
+                                " approach that comes up with spatial information. It consists of a model that can relate spatio-temporal ",
+                                " cases that occurred and estimate the type of crime the case belongs to. ",
+                                " For instance, below is the image that shows the real cases about personal thefts during December of 2019 and the right image shows the estimated. "
+                            ]
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        html.Img(src = "assets/comparative_results_theft_estimation.png", className = "column-picture")
+                                    ],
+                                    width = {"size": 8, "offset": 2}
+                                )
+                            ]
+                        ),
                     ]
                 )
             ],

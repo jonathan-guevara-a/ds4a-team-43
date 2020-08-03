@@ -1,0 +1,3 @@
+CREATE SCHEMA cali AUTHORIZATION postgres;
+
+CREATE SCHEMA targeting AUTHORIZATION postgres;

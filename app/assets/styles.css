@@ -35,3 +35,7 @@
     background-color: #ffac74 !important;
     color: #000000 !important;
 }
+
+.column-picture {
+    width: 100%;
+}
