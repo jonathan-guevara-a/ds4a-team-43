@@ -280,7 +280,7 @@ layout = html.Div([
                         html.Br(),
                         html.Br(),
                         html.Br(),
-                        html.H3("One Of The Most Concern Crime Increasing (sexual Abuse)"),
+                        html.H3("One Of The Most Concerning Crime Increasing (Sexual Abuse)"),
                         html.Br(),
                         html.P(
                             children = [
