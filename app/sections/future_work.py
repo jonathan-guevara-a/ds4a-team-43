@@ -3,11 +3,12 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 
+# Define list with information about the future work: title, description and picture to show.
 activites_list = [
     {
         "title": "Lorem ipsum dolor sit amet",
         "description": [
-            "Incorporate GXBoost predictive model into the website.",
+            "Incorporate XGBoost predictive model into the website.",
 "            Development and interpretation of a Causal Analysis Model, to identify the causal relationship between people's perception of security and actual criminal activity."
         ],
         "picture": "graph_1.png"
@@ -31,6 +32,7 @@ activites_list = [
     },
 ]
 
+# Transform each activity group into a Dash component in order to be visualized.
 activities_html_list = []
 
 for i, activity in enumerate(activites_list):
@@ -65,6 +67,7 @@ for i, activity in enumerate(activites_list):
         )
     )
 
+# Define base layout using Bootstrap grid system.
 layout = html.Div(
     children = [
         html.Br(),

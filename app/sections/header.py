@@ -82,6 +82,7 @@ layout = html.Div(
     ]
 )
 
+# Define callback to display the content from the selected tab.
 @app.callback(
     Output("content", "children"),
     [Input("navigation-tabs", "active_tab")]

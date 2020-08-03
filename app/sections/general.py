@@ -42,6 +42,7 @@ with open('data/cali_barrios.geojson', encoding = "utf-8") as geo:
 with open('data/cali_comunas.geojson', encoding = "utf-8") as geo:
     commune_geojson = json.loads(geo.read())
 
+# Define a commune dataframe to be used in the choropleth map.
 communes_list = []
 
 for feature in commune_geojson["features"]:
@@ -88,6 +89,8 @@ query = """
                 TOTAL
     FROM        TARGETING.VW_PERCEPTION_YEAR;
 """
+
+# Calculate the perception percentages to be used in the choropleth.
 base_perception_df = pd.read_sql_query(query, con = engine)
 base_perception_df["insecure_percentage"] = base_perception_df["insecure"] / base_perception_df["total"]
 base_perception_df["secure_percentage"] = base_perception_df["secure"] / base_perception_df["total"]
@@ -308,28 +311,31 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     # Get the boroughs with the most crimes.
     top_df = filtered_df[["borough_name", "total"]].groupby("borough_name").sum()\
         .sort_values(by = "total", ascending = False).reset_index().head(50)
+
     # Group the filtered df by borough_name and crime_type. This is used for the bar graph.
     filtered_crime_df = filtered_df[filtered_df["borough_name"].isin(top_df["borough_name"])]\
         .groupby(["borough_name", "crime_type"]).sum().reset_index()
-    # Group the filtered df by borough_commune and crime_type (This is temporary). This is used for the bar graph.
-    filtered_crime_commune_df = filtered_df.groupby (["borough_commune", "crime_type"]).sum().reset_index()
+
     # Group the filtered df by borough. This is used for the choropleth map.
     filtered_borough_df = filtered_df.groupby(
         ["borough_id", "borough_name", "borough_commune", "borough_zone", "borough_stratum"]
     ).sum().reset_index()
+
     # Group the filtered  df by borough_commune. This is used for the choropleth map.
     filtered_commune_df = filtered_df.groupby(["borough_commune", "borough_zone", "borough_stratum"]).sum().reset_index()
+
     # Define the borough data that will be displayed on the choropleth map when the user hovers on each polygon.
     filtered_borough_df["text"] = "Borough: " + filtered_borough_df["borough_name"] + \
         "<br />Commune: " + filtered_borough_df["borough_commune"].astype(str) + \
         "<br />Zone: " + filtered_borough_df["borough_zone"] + \
         "<br />Socioeconomical Level: " + filtered_borough_df["borough_stratum"].astype(str)
+
     # Define the commune data that will be displayed on the choropleth map when the user hovers on each polygon.
     filtered_commune_df["text"] = "Commune: " + filtered_borough_df["borough_commune"].astype(str) + \
         "<br />Zone: " + filtered_borough_df["borough_zone"] + \
         "<br />Socioeconomical Level: " + filtered_borough_df["borough_stratum"].astype(str)
 
-    # Update the map with the new data.
+    # Update the crimes map with the new data.
     map_figure_1 = go.Figure(
         data = [
             go.Choroplethmapbox(
@@ -369,7 +375,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
-    # Update the map with the new data.
+    # Update the perception map with the new data.
     filtered_perception_df["text"] = "Commune: " + filtered_perception_df["commune"] + \
         "<br />Insecure: " + round(filtered_perception_df["insecure_percentage"] * 100, 2).astype(str) + "%"\
         "<br />Secure: "  + round(filtered_perception_df["secure_percentage"] * 100, 2).astype(str) + "%"
@@ -429,10 +435,4 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
-    # Create a new columns with a longer name for the commune.
-    filtered_crime_commune_df["commune_name"] = filtered_crime_commune_df["borough_commune"].apply(
-        lambda x: "Commune " + x
-    )
-
-    # Return the figures to update.
     return [map_figure_1, bar_figure_1, map_figure_2]

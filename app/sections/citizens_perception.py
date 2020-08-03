@@ -191,20 +191,24 @@ def update_graphs(year):
             filtered_df["year"] == year
         ]
 
+    # Create the stacked bar graphs per variable and year.
     for i, variable in enumerate(variables_list):
         if variable == "education":
             variable_group_list = [variable + "_code", variable]
         else:
             variable_group_list = [variable]
 
+        # Get the dataframe grouped by the relevant variable.
         perception_variable_df = filtered_df.groupby(variable_group_list).sum().reset_index()
         perception_variable_df["insecure_percentage"] = round(perception_variable_df["insecure"] / perception_variable_df["total"] * 100, 2)
         perception_variable_df["secure_percentage"] = round(perception_variable_df["secure"] / perception_variable_df["total"] * 100, 2)
 
+        # Get the dataframe grouped by year.
         perception_year_variable_df = base_df.groupby(["year"] + variable_group_list).sum().reset_index()
         perception_year_variable_df["insecure_percentage"] = round(perception_year_variable_df["insecure"] / perception_year_variable_df["total"] * 100, 2)
         perception_year_variable_df["secure_percentage"] = round(perception_year_variable_df["secure"] / perception_year_variable_df["total"] * 100, 2)
 
+        # Create the stacked bar graph per variable.
         graphs_list.append(
             go.Figure(
                 data = [
@@ -230,6 +234,7 @@ def update_graphs(year):
             )
         )
 
+        # Create the stacked bar graph by year.
         graphs_list.append(
             go.Figure(
                 layout = go.Layout(

@@ -61,6 +61,8 @@ query = """
                 QUANTITY
     FROM        TARGETING.VW_CRIMES_VICTIM_DATETIME
 """
+
+# Retrieve individual date information to be used in the graphs.
 base_df = pd.read_sql_query(query, con = engine)
 base_df["year"] = base_df["date_time"].dt.year
 base_df["month"] = base_df["date_time"].dt.month
@@ -391,17 +393,17 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
     if (crime):
         filtered_df = filtered_df[filtered_df["crime_type"].isin(crime)]
 
-        # Get the dataframe grouped by year-month and crime_type.
+    # Get the dataframe grouped by year-month and crime_type.
     grouped_year_month_crime_df = filtered_df[["year_month", "crime_type", "quantity"]].groupby(["year_month", "crime_type"]).sum().reset_index()
-    # Get the dataframe by grouped by month.
+    # Get the dataframe grouped by month.
     grouped_month_df = filtered_df[["month", "quantity"]].groupby(["month"]).sum().reset_index()
-    # Get the dataframe by grouped by month.
+    # Get the dataframe grouped by day and hour.
     grouped_day_hour_df = filtered_df[["day", "day_name", "hour", "quantity"]].groupby(["day", "day_name", "hour"]).sum().reset_index()
-    # Get the dataframe by grouped by age_range.
+    # Get the dataframe grouped by age_range.
     grouped_age_df = filtered_df[["age_range", "quantity"]].groupby(["age_range"]).sum().reset_index()
-    # Get the dataframe by grouped by education.
+    # Get the dataframe grouped by education.
     grouped_education_df = filtered_df[["education", "quantity"]].groupby(["education"]).sum().reset_index()
-    # Get the dataframe by grouped by crime_chapter and sex.
+    # Get the dataframe grouped by crime_chapter and sex.
     grouped_sex_chapter_df = filtered_df[filtered_df["sex"].isin(["MALE", "FEMALE"])][["year_month", "crime_chapter", "sex", "quantity"]].groupby(["year_month", "crime_chapter", "sex"]).sum().reset_index()
 
 
@@ -431,6 +433,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
+    # Create the bar graph with the total per day/hour.
     day_hour_bar_figure = go.Figure(
         layout = {
             "height": 500,
@@ -441,6 +444,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         y = grouped_day_hour_df["quantity"],
     )
 
+    # Create the line graph with the total per age group.
     age_bar_figure = go.Figure(
         data = [
             go.Bar (
@@ -457,6 +461,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
+    # Create the line graph with the total per crime_type per education level.
     education_bar_figure = go.Figure(
         data = [
             go.Bar (
@@ -472,22 +477,7 @@ def update_graphs(year, month, zone, commune, borough, crime, corregimientos):
         }
     )
 
-    # Create the bar graph with the total crimes per month
-    months_list = grouped_month_df["month"].unique()
-    month_bar_figure = go.Figure(
-        data = [
-            go.Bar( x = grouped_month_df["month"], y = grouped_month_df["quantity"])
-        ],
-        layout = {
-            "height": 700,
-            "title": "Total Crimes by Month",
-            "xaxis": {
-                "tickvals": months_list,
-                "ticktext": [calendar.month_abbr[month] for month in months_list]
-            }
-        }
-    )
-
+    # Create the bar graphs for each crime type. Each crime type will be divided by sex.
     sex_chapter_graphs_list = []
 
     for chapter in grouped_sex_chapter_df["crime_chapter"].unique():

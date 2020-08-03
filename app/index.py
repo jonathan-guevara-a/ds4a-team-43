@@ -6,11 +6,12 @@ from sections import header
 
 app.title = "DS4A - Team 43"
 
+# Define the base layout using Bootstrap grid system.
 app.layout = html.Div([
-    dcc.Location(id = "route", refresh = False),
     header.layout,
     html.Div(id = "content", className = "px-3")
 ])
 
+# Initialize the server.
 if __name__ == "__main__":
     app.run_server(host = "0.0.0.0", debug = False)

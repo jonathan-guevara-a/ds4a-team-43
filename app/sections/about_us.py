@@ -3,6 +3,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 
+# Define list with information about the team members and special thanks entities: name, description and picture to show.
 profiles_list = [
     {
         "name": "Luz Elena Thompson Pinzón",
@@ -67,7 +68,7 @@ profiles_list = [
     {
         "name": "Daniel Gil",
         "description": [
-            "Statician.",
+            "Statistician.",
             "Master degree in Statistics."
         ],
         "picture": "ta-daniel.jpg"
@@ -93,6 +94,7 @@ profiles_list = [
     }
 ]
 
+# Transform each activity group into a Dash component in order to be visualized.
 profiles_html_list = []
 
 for profile in profiles_list:
@@ -123,7 +125,7 @@ for profile in profiles_list:
         )
     )
 
-
+# Define base layout using Bootstrap grid system.
 layout = html.Div(
     children = [
         dbc.Row(

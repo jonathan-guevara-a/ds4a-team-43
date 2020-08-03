@@ -23,23 +23,13 @@ DB_PASSWORD = lines[3].rstrip()
 file.close()
 
 # Define base color scale for all graphs.
-color_scale = [
-    "#a6cee3",
-    "#1f78b4",
-    "#b2df8a",
-    "#33a02c",
-    "#fb9a99",
-    "#e31a1c",
-    "#fdbf6f",
-    "#ff7f00",
-    "#cab2d6",
-    "#6a3d9a",
-    "#ffff99",
-    "#b15928"
-]
+color_scale = ["#1f78b4", "#33a02c", "#e31a1c", "#6a3d9a", "#ff7f00", "#b15928"]
 
 # Create database connection.
 engine = create_engine(f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}", max_overflow = 20)
+
+# Load the logistic model training data to be used in the security score prediction.
+logistic_model = joblib.load("data/logistic_prediction1.pkl")
 
 # Retrieve summarized information to display.
 query = """
@@ -52,12 +42,17 @@ query = """
     FROM        TARGETING.VW_FORECAST_CRIMES
 """
 base_df = pd.read_sql_query(query, con = engine)
+base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
+commune_list = base_df["commune"].unique()
 
+# Retrieve information about the computed forecast data.
 query = """
     SELECT      *
     FROM        CALI.TOTAL_FORECAST
 """
 forecast_df = pd.read_sql_query(query, con = engine)
+
+# Format the forecast dataframe in order to be used in the final prediction.
 forecast_df["comuna"] = forecast_df["comuna"].astype(str)
 forecast_df = forecast_df.drop(columns=["anio"])
 forecast_df = forecast_df.rename(
@@ -77,10 +72,7 @@ forecast_df = forecast_df.rename(
 )
 forecast_df["HUR_TOTAL"] = forecast_df["HUR"] + forecast_df["HUR_OTROS"]
 
-base_df["year_month"] = pd.to_datetime(base_df["year"].astype(str) + base_df["month"].astype(str), format = "%Y%m")
-commune_list = base_df["commune"].unique()
-color_scale = ["#1f78b4", "#33a02c", "#e31a1c", "#6a3d9a", "#ff7f00", "#b15928"]
-
+# Create the pie charts for the security perception prediction.
 labels = ["security", "insecurity"]
 pesimistic = [0.686794, 0.313206]
 base = [0.730697, 0.269303]
@@ -455,11 +447,15 @@ def update_graphs(commune):
     # Each filter is cumulative and has a hierarchy.
     filtered_df = base_df.copy()
 
+    # If there isn't an specific commune, show the data for all communes.
     if (commune and commune != ": All"):
         filtered_df = filtered_df[
             filtered_df["commune"] == commune
         ]
 
+    # Create the general forecasting line graph. For each graph create two traces:
+    # 1. The current values for year 2019 (continuous line).
+    # 2. Forecasted values for year 2020 (dotted line).
     traces_list = []
 
     for i, crime_type in enumerate(filtered_df["crime_type"].unique()):
@@ -518,6 +514,10 @@ def update_graphs(commune):
     )
 
 
+    # Create the forecasting graphs for each crime type. Each crime type will be divided by sex.
+    # For each graph create two traces:
+    # 1. The current values for year 2019 (continuous line).
+    # 2. Forecasted values for year 2020 (dotted line).
     for crime_type in filtered_df["crime_type"].unique():
         traces_list = []
 
@@ -588,6 +588,7 @@ def update_graphs(commune):
 
     return graphs_list
 
+# Define callback to calculate the perception score with the survey information.
 @app.callback(
     Output("predict-output", "children"),
     [Input("predict-button", "n_clicks")],
@@ -637,8 +638,6 @@ def calculate_prediction(n_clicks, commune, sex, age_range, corruption, punity, 
     input_df["rango_edad"] = pd.Categorical(input_df["comuna"],categories=["10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "Más de 90"])
 
     input_df = pd.get_dummies(input_df, columns=["comuna", "rango_edad"], drop_first = True)
-
-    logistic_model = joblib.load("data/logistic_prediction1.pkl")
 
     cols_logistic = ["seguridad_barrio_bin", "punidad_bin", "satisfaccion_barrio_bin","satisfaccion_ciudad_bin","corrupcion_bin", "percepcion_alcalde_bin","ASX", "HUR_TOTAL", "LEP",
                      "TER", "C_HOM", "C_HUR", "C_LEP", "comuna_2", "comuna_3", "comuna_4","comuna_5", "comuna_6", "comuna_7", "comuna_8", "comuna_9", "comuna_10",
